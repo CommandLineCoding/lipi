@@ -1,5 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 [![Milestones](https://img.shields.io/github/milestones/open/CommandLineCoding/lipi?style=flat-square&color=blue)](https://github.com/CommandLineCoding/lipi/milestones)
+[![Core](https://github.com/CommandLineCoding/lipi/actions/workflows/core.yaml/badge.svg)](https://github.com/CommandLineCoding/lipi/actions/workflows/core.yaml)
 [![Issues](https://img.shields.io/github/issues/CommandLineCoding/lipi?style=flat-square)](https://github.com/CommandLineCoding/lipi/issues)
 
 ---
@@ -54,11 +55,12 @@ Features are grouped by priority. `P0` is the first release and `P1` comes after
 
 ## Project Structure
 
-The layout below is the plan. Only the files at the top level exist so far (scaffolding is [#4](https://github.com/CommandLineCoding/lipi/issues/4) and [#25](https://github.com/CommandLineCoding/lipi/issues/25)).
+The layout below is the plan; directories appear as their issues land.
 
 ```
 lipi/
 ├── .github/                  # Issue forms, PR template and GitHub Actions workflows
+├── CMakeLists.txt            # Top-level build for the core, CLI and tests
 ├── docs/
 │   ├── ARCHITECTURE.md       # How the pieces fit together
 │   └── CORE_API.md           # C ABI contract of the core library
@@ -66,6 +68,8 @@ lipi/
 ├── core/                     # Portable C++ image pipeline (C ABI, no Android types)
 ├── cli/                      # Desktop CLI built on the core
 ├── android/                  # Kotlin + Compose app
+├── tests/                    # Unit tests (doctest)
+├── third_party/              # Vendored single-header libraries with their licenses
 ├── ml/                       # Training scripts and the evaluation harness
 ├── models/                   # Model cards, dataset cards and checksums
 ├── CONTRIBUTING.md
