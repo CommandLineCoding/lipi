@@ -1,45 +1,99 @@
 package `in`.commandlinecoding.lipi.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import `in`.commandlinecoding.lipi.NativeCore
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import `in`.commandlinecoding.lipi.LipiApplication
 import `in`.commandlinecoding.lipi.R
+import `in`.commandlinecoding.lipi.ui.components.HomeBottomBar
+import `in`.commandlinecoding.lipi.ui.components.HomeTab
+import `in`.commandlinecoding.lipi.ui.library.LibraryScreen
+import `in`.commandlinecoding.lipi.ui.library.LibraryViewModel
 import `in`.commandlinecoding.lipi.ui.theme.LipiDimens
 
-/** Root of the app. For now it shows an empty Library; the screens from the design arrive one by one. */
+object Routes {
+    const val Library = "library"
+    const val Settings = "settings"
+    const val Camera = "camera"
+}
+
+/** Root of the app: the navigation graph. Screens that are not built yet show a placeholder. */
 @Composable
 fun LipiApp() {
+    val nav = rememberNavController()
+    val app = LocalContext.current.applicationContext as LipiApplication
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(horizontal = LipiDimens.ScreenPadding, vertical = LipiDimens.ScreenPadding),
-            verticalArrangement = Arrangement.spacedBy(LipiDimens.Gap),
-        ) {
-            Text(
-                text = stringResource(R.string.library_title),
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            Text(
-                text = stringResource(R.string.library_empty),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = stringResource(R.string.core_version, NativeCore.version()),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        NavHost(navController = nav, startDestination = Routes.Library) {
+            composable(Routes.Library) {
+                val vm: LibraryViewModel = viewModel(factory = viewModelFactory { initializer { LibraryViewModel(app.documents) } })
+                val state by vm.state.collectAsState()
+                HomeShell(HomeTab.Library, nav) { clearance ->
+                    LibraryScreen(
+                        state = state,
+                        nowMillis = remember(state) { System.currentTimeMillis() },
+                        onQueryChange = vm::onQueryChange,
+                        onOpenSettings = { nav.navigate(Routes.Settings) { launchSingleTop = true } },
+                        onOpenDocument = { },
+                        onDeleteDocument = vm::delete,
+                        bottomClearance = clearance,
+                    )
+                }
+            }
+            composable(Routes.Settings) { HomeShell(HomeTab.Settings, nav) { Placeholder(stringResource(R.string.settings_title)) } }
+            composable(Routes.Camera) { Placeholder(stringResource(R.string.camera_title)) }
         }
+    }
+}
+
+/** A screen with the bottom bar and scan button. [content] receives the space the bar takes at the bottom. */
+@Composable
+private fun HomeShell(
+    tab: HomeTab,
+    nav: androidx.navigation.NavHostController,
+    content: @Composable (bottomClearance: Dp) -> Unit,
+) {
+    val navBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val clearance = LipiDimens.BottomBarHeight + navBar + 40.dp  // the scan button rises 28 dp above the bar
+    Box(modifier = Modifier.fillMaxSize()) {
+        content(clearance)
+        HomeBottomBar(
+            selected = tab,
+            libraryLabel = stringResource(R.string.library_title),
+            settingsLabel = stringResource(R.string.settings_title),
+            scanDescription = stringResource(R.string.scan),
+            onLibrary = { nav.navigate(Routes.Library) { popUpTo(Routes.Library) { inclusive = true }; launchSingleTop = true } },
+            onSettings = { nav.navigate(Routes.Settings) { launchSingleTop = true } },
+            onScan = { nav.navigate(Routes.Camera) { launchSingleTop = true } },
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
+    }
+}
+
+@Composable
+private fun Placeholder(title: String) {
+    Box(modifier = Modifier.fillMaxSize().statusBarsPadding(), contentAlignment = Alignment.Center) {
+        Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
