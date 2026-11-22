@@ -31,16 +31,19 @@ Labels tell you where the work is (`area: core`, `area: android`, `area: ml`, `a
 
 ## Set up
 
-The project is still being scaffolded, so there's nothing to build yet. The commands below describe the planned workflow and will be filled in when the first code lands ([#4](https://github.com/CommandLineCoding/lipi/issues/4), [#6](https://github.com/CommandLineCoding/lipi/issues/6), [#25](https://github.com/CommandLineCoding/lipi/issues/25)).
+You need Git, CMake 3.20+ and a C++17 compiler. Ninja is optional but faster. The Android app is not scaffolded yet ([#25](https://github.com/CommandLineCoding/lipi/issues/25)).
 
 ### Core and CLI
 
 ```bash
 git clone https://github.com/<you>/lipi.git
 cd lipi
-cmake -S core -B build && cmake --build build
-./build/cli/lipi-cli scan in.jpg -o out.png
+cmake -S . -B build -G Ninja
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
+
+Add `-DLIPI_SANITIZE=ON` (and `-DCMAKE_BUILD_TYPE=Debug`) to build with AddressSanitizer and UndefinedBehaviorSanitizer, as CI does. The core has no third-party dependencies; single-header libraries used by the CLI and tests live in `third_party/` with their licenses.
 
 ### App
 
@@ -58,6 +61,7 @@ You need the Android NDK for the native core. The versions we build with will be
 | Path | What's there |
 |---|---|
 | `core/` | The C++ image pipeline and its C ABI. A good place to start reading |
+| `tests/` | Unit tests for the core |
 | `cli/` | The desktop command-line tool built on the core |
 | `android/` | The Kotlin + Compose app: screens, CameraX capture, Room database |
 | `ml/` | Training scripts and the evaluation harness |
@@ -75,7 +79,7 @@ You need the Android NDK for the native core. The versions we build with will be
 
    ```bash
    # core and CLI
-   ctest --test-dir build
+   cmake --build build && ctest --test-dir build --output-on-failure
 
    # app
    cd android

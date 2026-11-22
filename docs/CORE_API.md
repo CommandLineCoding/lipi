@@ -2,7 +2,7 @@
 
 The contract between the portable C++ core and its callers (the desktop CLI, the Android JNI layer and, later, iOS). The core exposes a C ABI with no Android types.
 
-> **Status:** the API is not implemented yet. This page records the rules the API must follow and will list every function as it lands ([#4](https://github.com/CommandLineCoding/lipi/issues/4)).
+> **Status:** under construction. The header is [core/include/lipi/lipi.h](../core/include/lipi/lipi.h); this page records the rules it follows and lists each area as it lands.
 
 ## Rules
 
@@ -23,3 +23,11 @@ The contract between the portable C++ core and its callers (the desktop CLI, the
 | Warp | Flatten a quad to a page rectangle |
 | Enhance | Orientation, deskew, shadow removal, filters, brightness and contrast |
 | PDF writer | Build a multi-page PDF from page images (and, later, a text layer) |
+
+## Conventions
+
+- **Corner order.** A page quad is always `top-left, top-right, bottom-right, bottom-left` as seen on the image, in pixel coordinates with x to the right, y down and the origin at the top-left corner of the top-left pixel.
+- **Pixel buffers.** `lipi_image_view` borrows caller memory (`data`, `width`, `height`, `stride` in bytes, `format`). `lipi_image` is owned by the core and freed with `lipi_image_free`. Supported formats are gray, RGB and RGBA, 8 bits per channel.
+- **Status codes.** `LIPI_OK`, `LIPI_ERR_INVALID_ARGUMENT`, `LIPI_ERR_OUT_OF_MEMORY`, `LIPI_ERR_UNSUPPORTED`, `LIPI_ERR_INTERNAL`. `lipi_status_string` describes them.
+- **Outputs.** Functions that create an object write it through an `out` pointer, which is set to `NULL` on failure.
+- **Decoding.** The core does not decode or encode image files; the CLI and the app do that.
