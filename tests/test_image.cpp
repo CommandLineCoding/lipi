@@ -4,7 +4,7 @@
 #include "lipi/lipi.h"
 
 TEST_CASE("status strings are never null") {
-  for (int s = 0; s <= 5; ++s) {
+  for (int s = 0; s <= 7; ++s) {
     CHECK(lipi_status_string(static_cast<lipi_status>(s)) != nullptr);
   }
   CHECK(std::strcmp(lipi_status_string(LIPI_OK), "ok") == 0);

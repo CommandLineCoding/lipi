@@ -18,7 +18,7 @@ google-services.json
 .kotlin/
 
 # CMake / native
-/build/
+/build*/
 CMakeCache.txt
 CMakeFiles/
 cmake-build-*/
@@ -36,6 +36,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
 
 # Models and datasets are tracked via checksums/manifests, not committed raw
 *.onnx.tmp

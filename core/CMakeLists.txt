@@ -1,7 +1,9 @@
 add_library(lipi_core
   src/geometry.cpp
-  src/enhance.cpp
+  src/gray.cpp
   src/image.cpp
+  src/detect.cpp
+  src/pdf.cpp
   src/quad.cpp
   src/status.cpp
   src/version.cpp
