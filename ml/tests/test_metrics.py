@@ -69,3 +69,17 @@ def test_report_matches_the_committed_fixture():
     with open(os.path.join(fx, "expected_report.json")) as f:
         want = json.load(f)
     assert json.loads(json.dumps(got)) == want
+
+
+def test_stability_metrics():
+    from lipi_eval.stability import jitter, lag
+
+    still = [SQUARE] * 5
+    assert jitter(still, 200, 100) == 0.0
+    moving = [[[x + 5 * i, y] for x, y in SQUARE] for i in range(4)]
+    assert jitter(moving, 200, 100) == pytest.approx(5 / np.hypot(200, 100))
+    assert jitter([SQUARE, None, SQUARE], 200, 100) is None  # a gap breaks the track
+    assert jitter([], 200, 100) is None
+    assert lag([SQUARE], [SQUARE], 200, 100) == 0.0
+    shifted = [[x + 3, y + 4] for x, y in SQUARE]
+    assert lag([shifted], [SQUARE], 200, 100) == pytest.approx(5 / np.hypot(200, 100))

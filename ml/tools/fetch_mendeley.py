@@ -7,7 +7,8 @@ Mansouri, Baniadam Dizaj, 2020), https://data.mendeley.com/datasets/x3nm4cxr83,
 licensed CC BY 4.0. Please cite the paper when you use it. Images are
 downloaded, checked against the published SHA-256, rotated upright using EXIF
 and shrunk so that the long side is --size pixels. The originals are not kept.
-The dataset is only ever used for validation and testing, never for training.
+The first images of the shuffled list (--count, default 400) are the validation and test pool and are never used for
+training; --train-from takes the images after that pool as a training split.
 """
 import argparse
 import csv
@@ -110,6 +111,9 @@ def main():
     ap.add_argument("--count", type=int, default=400)
     ap.add_argument("--size", type=int, default=512)
     ap.add_argument("--val", type=int, default=100, help="how many of the images go to the validation split")
+    ap.add_argument("--train-from", type=int, default=None, metavar="N",
+                    help="skip the first N images (the validation and test pool) and write ALL the rest, up to "
+                         "--count, as a training split. Use the same --seed as for val/test so the splits never overlap.")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--jobs", type=int, default=8)
     args = ap.parse_args()
@@ -119,7 +123,10 @@ def main():
     files = {f["filename"]: f for f in meta["files"]}
     names = sorted(n[:-4] for n in files if n.endswith(".jpg") and n[:-4] + ".csv" in files)
     random.Random(args.seed).shuffle(names)
-    names = names[: args.count]
+    if args.train_from is not None:
+        names = names[args.train_from: args.train_from + args.count]
+    else:
+        names = names[: args.count]
     os.makedirs(os.path.join(args.out, "images"), exist_ok=True)
     entries = [(n.strip("()"), files[n + ".jpg"], files[n + ".csv"]) for n in names]
     rows, skipped = [], []
@@ -129,11 +136,15 @@ def main():
     rows.sort(key=lambda r: r["id"])
     order = {n.strip("()"): i for i, n in enumerate(names)}
     rows.sort(key=lambda r: order[r["id"][5:]])
-    val = [dict(r, split="val") for r in rows[: args.val]]
-    test = [dict(r, split="test") for r in rows[args.val:]]
-    write_jsonl(os.path.join(args.out, "val.jsonl"), val)
-    write_jsonl(os.path.join(args.out, "test.jsonl"), test)
-    print(f"{len(val)} val, {len(test)} test, {len(skipped)} skipped")
+    if args.train_from is not None:
+        write_jsonl(os.path.join(args.out, "train.jsonl"), [dict(r, split="train") for r in rows])
+        print(f"{len(rows)} train, {len(skipped)} skipped")
+    else:
+        val = [dict(r, split="val") for r in rows[: args.val]]
+        test = [dict(r, split="test") for r in rows[args.val:]]
+        write_jsonl(os.path.join(args.out, "val.jsonl"), val)
+        write_jsonl(os.path.join(args.out, "test.jsonl"), test)
+        print(f"{len(val)} val, {len(test)} test, {len(skipped)} skipped")
     for s in skipped[:10]:
         print("  ", s)
 
