@@ -83,3 +83,14 @@ def test_stability_metrics():
     assert lag([SQUARE], [SQUARE], 200, 100) == 0.0
     shifted = [[x + 3, y + 4] for x, y in SQUARE]
     assert lag([shifted], [SQUARE], 200, 100) == pytest.approx(5 / np.hypot(200, 100))
+
+
+def test_report_has_a_section_per_document_kind_when_rows_have_one():
+    rows = [dict(_row("a"), kind="receipt"), dict(_row("b"), kind="receipt"), dict(_row("c"), kind="notes")]
+    preds = [{"id": "a", "quad": SQUARE, "orientation": 1}, {"id": "b", "quad": SQUARE, "orientation": 0},
+             {"id": "c", "quad": SQUARE, "orientation": 1}]
+    r = score(rows, preds)
+    assert set(r["kinds"]) == {"synthetic/receipt", "synthetic/notes"}
+    assert r["kinds"]["synthetic/receipt"]["orientation_accuracy"] == 0.5
+    assert r["kinds"]["synthetic/notes"]["orientation_accuracy"] == 1.0
+    assert "kinds" not in score([_row("a")], [{"id": "a", "quad": SQUARE}])  # no kinds without a "kind" field

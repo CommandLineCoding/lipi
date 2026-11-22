@@ -1,5 +1,6 @@
 add_executable(lipi_tests
   main.cpp
+  test_deskew.cpp
   test_detect.cpp
   test_detector.cpp
   test_enhance.cpp

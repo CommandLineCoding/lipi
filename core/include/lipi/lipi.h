@@ -236,6 +236,17 @@ LIPI_API lipi_enhance_options lipi_enhance_defaults(void);
 LIPI_API lipi_status lipi_enhance(const lipi_image_view* src, const lipi_enhance_options* options,
                                   lipi_image** out);
 
+/* Estimates how far the lines of text on a flattened page are tilted, by
+ * looking for the rotation that makes the rows of ink sharpest. *degrees is
+ * the amount to rotate the page clockwise to straighten it (within +-8
+ * degrees); *confidence (optional) is 0 to 1. Pages without enough text
+ * return 0 degrees and 0 confidence. */
+LIPI_API lipi_status lipi_estimate_skew(const lipi_image_view* src, float* degrees, float* confidence);
+
+/* Rotates an image clockwise by `degrees` about its centre, keeping its size
+ * and filling the corners with the page's own background colour. */
+LIPI_API lipi_status lipi_rotate(const lipi_image_view* src, float degrees, lipi_image** out);
+
 #ifdef __cplusplus
 }
 #endif

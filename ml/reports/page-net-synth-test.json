@@ -21,6 +21,118 @@
     },
     "orientation_accuracy": 0.986
   },
+  "kinds": {
+    "synthetic/document": {
+      "corner_error": {
+        "mean": 0.00142,
+        "median": 0.00117,
+        "p95": 0.00276
+      },
+      "failures": 0,
+      "images": 827,
+      "iou": {
+        "mean": 0.99067,
+        "median": 0.99237,
+        "p95": 0.99645
+      },
+      "iou_ge_90": 0.9988,
+      "iou_ge_95": 0.994,
+      "latency_ms": {
+        "mean": 70.5884,
+        "median": 68.91,
+        "p95": 103.465
+      },
+      "orientation_accuracy": 0.9976
+    },
+    "synthetic/id_card": {
+      "corner_error": {
+        "mean": 0.00228,
+        "median": 0.00187,
+        "p95": 0.00494
+      },
+      "failures": 0,
+      "images": 289,
+      "iou": {
+        "mean": 0.98363,
+        "median": 0.98748,
+        "p95": 0.9938
+      },
+      "iou_ge_90": 1.0,
+      "iou_ge_95": 0.9654,
+      "latency_ms": {
+        "mean": 70.51343,
+        "median": 68.0,
+        "p95": 100.898
+      },
+      "orientation_accuracy": 1.0
+    },
+    "synthetic/notes": {
+      "corner_error": {
+        "mean": 0.00137,
+        "median": 0.0012,
+        "p95": 0.00274
+      },
+      "failures": 0,
+      "images": 261,
+      "iou": {
+        "mean": 0.99145,
+        "median": 0.99257,
+        "p95": 0.99624
+      },
+      "iou_ge_90": 1.0,
+      "iou_ge_95": 1.0,
+      "latency_ms": {
+        "mean": 69.77034,
+        "median": 69.48,
+        "p95": 103.32
+      },
+      "orientation_accuracy": 1.0
+    },
+    "synthetic/receipt": {
+      "corner_error": {
+        "mean": 0.00156,
+        "median": 0.00127,
+        "p95": 0.00293
+      },
+      "failures": 0,
+      "images": 418,
+      "iou": {
+        "mean": 0.98469,
+        "median": 0.98739,
+        "p95": 0.99479
+      },
+      "iou_ge_90": 0.9976,
+      "iou_ge_95": 0.9785,
+      "latency_ms": {
+        "mean": 70.81144,
+        "median": 70.36,
+        "p95": 105.252
+      },
+      "orientation_accuracy": 0.9761
+    },
+    "synthetic/whiteboard": {
+      "corner_error": {
+        "mean": 0.00222,
+        "median": 0.00195,
+        "p95": 0.00386
+      },
+      "failures": 0,
+      "images": 205,
+      "iou": {
+        "mean": 0.98372,
+        "median": 0.98561,
+        "p95": 0.99299
+      },
+      "iou_ge_90": 0.9951,
+      "iou_ge_95": 0.9951,
+      "latency_ms": {
+        "mean": 71.70312,
+        "median": 70.56,
+        "p95": 100.9
+      },
+      "orientation_accuracy": 0.922
+    }
+  },
   "sources": {
     "synthetic": {
       "corner_error": {
