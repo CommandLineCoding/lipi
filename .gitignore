@@ -18,6 +18,7 @@ google-services.json
 .kotlin/
 
 # CMake / native
+/build/
 CMakeCache.txt
 CMakeFiles/
 cmake-build-*/
@@ -39,3 +40,11 @@ venv/
 # Models and datasets are tracked via checksums/manifests, not committed raw
 *.onnx.tmp
 /datasets/raw/
+
+# ML working data and training output (models are committed under models/)
+/ml/data/
+/ml/runs/
+/ml/.venv/
+*.pt
+*.pth
+*.ckpt

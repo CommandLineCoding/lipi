@@ -1,0 +1,41 @@
+cmake_minimum_required(VERSION 3.20)
+project(lipi VERSION 0.0.1 LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+option(LIPI_BUILD_TESTS "Build the unit tests" ON)
+option(LIPI_BUILD_CLI "Build the lipi-cli tool" ON)
+option(LIPI_SANITIZE "Build with AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+add_library(lipi_options INTERFACE)
+if(MSVC)
+  target_compile_options(lipi_options INTERFACE /W4)
+else()
+  target_compile_options(lipi_options INTERFACE -Wall -Wextra -Wpedantic -Wshadow -Wconversion)
+  if(LIPI_SANITIZE)
+    target_compile_options(lipi_options INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=undefined)
+    target_link_options(lipi_options INTERFACE -fsanitize=address,undefined)
+  endif()
+endif()
+
+add_subdirectory(core)
+
+if(LIPI_BUILD_CLI AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cli/CMakeLists.txt")
+  add_subdirectory(cli)
+endif()
+
+if(LIPI_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
