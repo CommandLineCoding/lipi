@@ -31,7 +31,7 @@ Labels tell you where the work is (`area: core`, `area: android`, `area: ml`, `a
 
 ## Set up
 
-You need Git, CMake 3.20+ and a C++17 compiler. Ninja is optional but faster. The Android app is not scaffolded yet ([#25](https://github.com/CommandLineCoding/lipi/issues/25)).
+You need Git, CMake 3.20+ and a C++17 compiler. Ninja is optional but faster. For the Android app you also need a full JDK (17 or newer, not just a runtime) and the Android SDK with NDK 28.2 and CMake 3.22.
 
 ### Core and CLI
 
@@ -61,14 +61,17 @@ Add `-DLIPI_SANITIZE=ON` (and `-DCMAKE_BUILD_TYPE=Debug`) to build with AddressS
 
 ### App
 
-Open `android/` in Android Studio, or build from the command line:
+Open `android/` in Android Studio, or build from the command line (set `sdk.dir` in `android/local.properties`, or `ANDROID_HOME`):
 
 ```bash
 cd android
-./gradlew assembleDebug
+./gradlew assembleDebug testDebugUnitTest
+python3 tools/check_no_network.py app/build/outputs/apk/debug/app-debug.apk
+python3 tools/check_alignment.py app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:dependencies --configuration releaseRuntimeClasspath -q | python3 tools/check_dependencies.py
 ```
 
-You need the Android NDK for the native core. The versions we build with will be pinned in the repository so builds stay reproducible.
+The last three lines are the same checks CI runs: the app must not ask for any network permission, its native libraries must be 16 KB page-aligned, and it must not depend on proprietary or incompatible libraries. The Gradle, plugin, NDK and library versions are pinned in `android/gradle/libs.versions.toml` and `android/app/build.gradle.kts`, so builds stay reproducible.
 
 ## Where things live
 

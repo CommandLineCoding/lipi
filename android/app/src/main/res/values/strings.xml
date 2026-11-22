@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lipi</string>
+    <string name="library_title">Library</string>
+    <string name="library_empty">No documents yet. Scan one to get started.</string>
+    <string name="core_version">Core %1$s</string>
+</resources>
