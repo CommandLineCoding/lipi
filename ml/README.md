@@ -1,0 +1,37 @@
+# ml
+
+Training scripts and the evaluation harness for Lipi's page detection. Everything here is plain Python; the app and the core do not depend on it.
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+python -m pytest -q
+```
+
+## Corpus
+
+The corpus has a synthetic part (exact labels, no third-party images) and a real part (phone photos from a public CC BY 4.0 dataset). See [the dataset card](../models/datasets/lipi-corpus.md) for sources, licenses and the fixed splits.
+
+```bash
+# synthetic splits (needs Noto fonts: Latin, Bengali and Devanagari)
+python tools/synth.py --out data/synth --split train --seed 1 --count 20000
+python tools/synth.py --out data/synth-val --split val --seed 2 --count 1000
+python tools/synth.py --out data/synth-test --split test --seed 3 --count 2000
+
+# real validation and test photos (about 1 GB is downloaded, 512 px copies are kept)
+python tools/fetch_mendeley.py --out data/real --count 400
+```
+
+The annotation format is documented in [lipi_eval/corpus.py](lipi_eval/corpus.py). Corners are always top-left, top-right, bottom-right, bottom-left as seen on the image, matching [docs/CORE_API.md](../docs/CORE_API.md).
+
+## Scoring a detector
+
+A detector writes one JSON line per image (`id`, `quad` or `null`, optional `orientation` and `ms`). The scorer compares it with the corpus:
+
+```bash
+python -m lipi_eval.score --corpus data/synth-test/test.jsonl --pred preds.jsonl --out report.json
+```
+
+The report has, per source and overall: mean, median and 95th percentile corner error (mean corner distance divided by the image diagonal, taking the best of the four cyclic shifts), IoU of the page quad, the share of images above 0.90 and 0.95 IoU, failures (no quad, counted as IoU 0), latency and orientation accuracy. Keys are sorted and numbers rounded so the file can be diffed in CI; [tests/fixtures/](tests/fixtures/) holds a tiny example that the tests compare against.
+
+Latency here is wall time on the machine that ran the detector. It says nothing about phones; the on-device target is measured separately ([#9](https://github.com/CommandLineCoding/lipi/issues/9)).
