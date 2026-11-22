@@ -127,6 +127,37 @@ LIPI_API lipi_status lipi_detect_page_classical(const lipi_image_view* src, lipi
 LIPI_API lipi_status lipi_refine_quad(const lipi_image_view* src, const lipi_quad* in_quad,
                                       lipi_quad* out_quad);
 
+/* Temporal smoothing of a page quad across camera frames: a One-Euro filter on
+ * the corners (steady when the page is still, quick when it moves) that
+ * restarts when the page changes. Coordinates are filtered relative to the
+ * image diagonal, so the settings do not depend on resolution. */
+typedef struct lipi_smoother_options {
+  float min_cutoff_hz;  /* cut-off when the page is still; lower is steadier (default 1.5) */
+  float beta;           /* how quickly the cut-off rises with speed (default 25) */
+  float reset_distance; /* corner jump, as a fraction of the diagonal, that starts a new track (default 0.12) */
+  float hold_seconds;   /* how long to keep the last quad when detection drops out (default 0.4) */
+} lipi_smoother_options;
+
+typedef struct lipi_smoother lipi_smoother;
+
+LIPI_API lipi_smoother_options lipi_smoother_defaults(void);
+LIPI_API lipi_status lipi_smoother_create(int image_width, int image_height,
+                                          const lipi_smoother_options* options, lipi_smoother** out);
+
+/* Feeds one frame. Pass the detected quad, or NULL when nothing was found.
+ * `timestamp_seconds` must not go backwards. On LIPI_OK, *out is the smoothed
+ * quad. LIPI_ERR_NOT_FOUND means detection has been missing for longer than
+ * hold_seconds (or never succeeded). */
+LIPI_API lipi_status lipi_smoother_update(lipi_smoother* smoother, const lipi_quad* detected,
+                                          double timestamp_seconds, lipi_quad* out);
+
+/* How long the quad has barely moved, in seconds; 0 right after a move or a
+ * reset. Useful for auto-capture. */
+LIPI_API double lipi_smoother_steady_seconds(const lipi_smoother* smoother);
+
+LIPI_API void lipi_smoother_reset(lipi_smoother* smoother);
+LIPI_API void lipi_smoother_free(lipi_smoother* smoother);
+
 /* PDF output. Pages are streamed to a callback, so the core never touches files.
  * The callback returns the number of bytes it accepted; anything less than
  * `size` is treated as a failure. Output is deterministic: it carries no
