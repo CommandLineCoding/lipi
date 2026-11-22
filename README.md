@@ -8,7 +8,7 @@
 # Lipi
 Lipi is a privacy-first, open-source document scanner for Android. It finds the page in the camera view with an on-device model, flattens and cleans it up, and exports a PDF or image, with multi-script OCR (including Bengali and Hindi) planned for searchable PDFs. Everything runs on the phone, and the app needs no network permission.
 
-> **Status:** planning. Nothing is released yet. The [milestones](https://github.com/CommandLineCoding/lipi/milestones) and [issues](https://github.com/CommandLineCoding/lipi/issues) show what is planned and what is free to pick up.
+> **Status:** early development. [v0.0.1](https://github.com/CommandLineCoding/lipi/releases/tag/v0.0.1) is the core library and a desktop command-line tool (`lipi-cli`); the Android app is next. The [milestones](https://github.com/CommandLineCoding/lipi/milestones) and [issues](https://github.com/CommandLineCoding/lipi/issues) show what is planned and what is free to pick up.
 
 ## Design
 
@@ -48,7 +48,7 @@ Features are grouped by priority. `P0` is the first release and `P1` comes after
 
 | Milestone | Goal |
 |---|---|
-| [v0.0.1 — Core & CLI](https://github.com/CommandLineCoding/lipi/milestones) | Image in, clean deskewed page out. Test corpus, evaluation harness, first detector model. |
+| [v0.0.1 — Core & CLI](https://github.com/CommandLineCoding/lipi/milestone/1?closed=1) (released) | Image in, clean deskewed page out. Test corpus, evaluation harness, first detector model. |
 | [v0.1.0 — Android MVP](https://github.com/CommandLineCoding/lipi/milestones) | CameraX capture, live detection, crop, enhance, PDF export, library. Released on F-Droid and GitHub. |
 | [v0.2.0 — OCR & searchable PDF](https://github.com/CommandLineCoding/lipi/milestones) | On-device OCR, searchable PDF, language packs, full-text search. Google Play. |
 | [v0.3.0 — Layout, dewarp & redaction](https://github.com/CommandLineCoding/lipi/milestones) | Layout and tables, dewarping, redaction, compression. |
