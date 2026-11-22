@@ -20,7 +20,7 @@ The contract between the portable C++ core and its callers (the desktop CLI, the
 | Image buffer | Describe a pixel buffer (width, height, stride, format) |
 | Detector | Load a model, find four page corners with a confidence |
 | Quad | Refine corners and smooth them across frames |
-| Warp | Flatten a quad to a page rectangle |
+| Quad and warp | `lipi_quad_validate`, `lipi_estimate_page_size` (aspect recovered from perspective, with a phone-camera focal-length fallback) and `lipi_warp_quad` (bilinear) |
 | Enhance | Orientation, deskew, shadow removal, filters, brightness and contrast |
 | PDF writer | Build a multi-page PDF from page images (and, later, a text layer) |
 

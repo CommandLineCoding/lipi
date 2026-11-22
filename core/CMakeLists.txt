@@ -1,7 +1,10 @@
 add_library(lipi_core
+  src/geometry.cpp
   src/image.cpp
+  src/quad.cpp
   src/status.cpp
   src/version.cpp
+  src/warp.cpp
 )
 target_include_directories(lipi_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
