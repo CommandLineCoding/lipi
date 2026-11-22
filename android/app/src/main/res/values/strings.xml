@@ -19,7 +19,10 @@
     <string name="camera_capture_failed">The photo could not be saved. Try again.</string>
     <string name="camera_import_failed">Some photos could not be read and were skipped.</string>
     <string name="camera_discard_title">Discard this scan?</string>
-    <string name="camera_discard_message">The %1$d captured pages will be deleted.</string>
+    <plurals name="camera_discard_message">
+        <item quantity="one">The captured page will be deleted.</item>
+        <item quantity="other">The %d captured pages will be deleted.</item>
+    </plurals>
     <string name="camera_discard">Discard</string>
     <string name="camera_keep_scanning">Keep scanning</string>
     <string name="camera_permission_title">Camera access is off</string>

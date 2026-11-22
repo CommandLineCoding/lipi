@@ -105,8 +105,16 @@ fun LibraryScreen(
 
 @Composable
 private fun EmptyLibrary(message: String, bottomClearance: androidx.compose.ui.unit.Dp) {
-    Box(modifier = Modifier.fillMaxSize().padding(bottom = bottomClearance), contentAlignment = Alignment.Center) {
-        Text(message, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Box(
+        modifier = Modifier.fillMaxSize().padding(start = 32.dp, end = 32.dp, bottom = bottomClearance),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        )
     }
 }
 
