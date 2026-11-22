@@ -36,7 +36,8 @@ typedef enum lipi_status {
   LIPI_ERR_OUT_OF_MEMORY = 2,
   LIPI_ERR_UNSUPPORTED = 3,
   LIPI_ERR_INTERNAL = 4,
-  LIPI_ERR_NOT_FOUND = 5 /* no page could be found; an expected outcome, not a fault */
+  LIPI_ERR_NOT_FOUND = 5, /* no page could be found; an expected outcome, not a fault */
+  LIPI_ERR_IO = 6         /* a write callback reported failure */
 } lipi_status;
 
 /* Returns a static, human-readable description of a status code. */
@@ -125,6 +126,32 @@ LIPI_API lipi_status lipi_detect_page_classical(const lipi_image_view* src, lipi
  * keep their order. If an edge cannot be refined, its coarse position is kept. */
 LIPI_API lipi_status lipi_refine_quad(const lipi_image_view* src, const lipi_quad* in_quad,
                                       lipi_quad* out_quad);
+
+/* PDF output. Pages are streamed to a callback, so the core never touches files.
+ * The callback returns the number of bytes it accepted; anything less than
+ * `size` is treated as a failure. Output is deterministic: it carries no
+ * timestamps, so identical input gives identical bytes. */
+typedef size_t (*lipi_write_fn)(const void* data, size_t size, void* user);
+
+typedef struct lipi_pdf lipi_pdf;
+
+LIPI_API lipi_status lipi_pdf_create(lipi_write_fn write, void* user, lipi_pdf** out);
+
+/* Adds a page showing a baseline or progressive JPEG (gray or RGB) as it is,
+ * without recompressing. The page is sized from the image and `dpi`. */
+LIPI_API lipi_status lipi_pdf_add_page_jpeg(lipi_pdf* pdf, const uint8_t* jpeg, size_t size,
+                                            float dpi);
+
+/* Adds a page from raw pixels (stored without lossy compression). */
+LIPI_API lipi_status lipi_pdf_add_page_image(lipi_pdf* pdf, const lipi_image_view* image,
+                                             float dpi);
+
+/* Writes the page tree and cross-reference table. Call once, after the last
+ * page; at least one page is required. */
+LIPI_API lipi_status lipi_pdf_finish(lipi_pdf* pdf);
+
+/* Frees the writer. Passing NULL is allowed. */
+LIPI_API void lipi_pdf_free(lipi_pdf* pdf);
 
 #ifdef __cplusplus
 }
