@@ -94,6 +94,24 @@ typedef struct lipi_quad {
   lipi_point p[4];
 } lipi_quad;
 
+/* Returns LIPI_OK if the quad is a finite, convex, non-degenerate quadrilateral
+ * in the corner order described above. */
+LIPI_API lipi_status lipi_quad_validate(const lipi_quad* quad);
+
+/* Estimates the size of the flat page that a quad in an image of the given size
+ * shows, keeping the page's aspect ratio. The aspect is recovered from the
+ * perspective of the quad (a pinhole camera with the principal point at the
+ * image center is assumed); if that fails, the average side lengths are used.
+ * The longer side is at most `max_side` pixels. */
+LIPI_API lipi_status lipi_estimate_page_size(const lipi_quad* quad, int image_width,
+                                             int image_height, int max_side, int* out_width,
+                                             int* out_height);
+
+/* Flattens the quad to an out_width x out_height image with bilinear
+ * resampling. The output has the same pixel format as the source. */
+LIPI_API lipi_status lipi_warp_quad(const lipi_image_view* src, const lipi_quad* quad,
+                                    int out_width, int out_height, lipi_image** out);
+
 #ifdef __cplusplus
 }
 #endif
