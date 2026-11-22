@@ -36,7 +36,8 @@ typedef enum lipi_status {
   LIPI_ERR_OUT_OF_MEMORY = 2,
   LIPI_ERR_UNSUPPORTED = 3,
   LIPI_ERR_INTERNAL = 4,
-  LIPI_ERR_NOT_FOUND = 5 /* no page could be found; an expected outcome, not a fault */
+  LIPI_ERR_NOT_FOUND = 5, /* no page could be found; an expected outcome, not a fault */
+  LIPI_ERR_IO = 6         /* a write callback reported failure */
 } lipi_status;
 
 /* Returns a static, human-readable description of a status code. */
@@ -156,6 +157,56 @@ LIPI_API double lipi_smoother_steady_seconds(const lipi_smoother* smoother);
 
 LIPI_API void lipi_smoother_reset(lipi_smoother* smoother);
 LIPI_API void lipi_smoother_free(lipi_smoother* smoother);
+
+/* PDF output. Pages are streamed to a callback, so the core never touches files.
+ * The callback returns the number of bytes it accepted; anything less than
+ * `size` is treated as a failure. Output is deterministic: it carries no
+ * timestamps, so identical input gives identical bytes. */
+typedef size_t (*lipi_write_fn)(const void* data, size_t size, void* user);
+
+typedef struct lipi_pdf lipi_pdf;
+
+LIPI_API lipi_status lipi_pdf_create(lipi_write_fn write, void* user, lipi_pdf** out);
+
+/* Adds a page showing a baseline or progressive JPEG (gray or RGB) as it is,
+ * without recompressing. The page is sized from the image and `dpi`. */
+LIPI_API lipi_status lipi_pdf_add_page_jpeg(lipi_pdf* pdf, const uint8_t* jpeg, size_t size,
+                                            float dpi);
+
+/* Adds a page from raw pixels (stored without lossy compression). */
+LIPI_API lipi_status lipi_pdf_add_page_image(lipi_pdf* pdf, const lipi_image_view* image,
+                                             float dpi);
+
+/* Writes the page tree and cross-reference table. Call once, after the last
+ * page; at least one page is required. */
+LIPI_API lipi_status lipi_pdf_finish(lipi_pdf* pdf);
+
+/* Frees the writer. Passing NULL is allowed. */
+LIPI_API void lipi_pdf_free(lipi_pdf* pdf);
+
+typedef enum lipi_filter {
+  LIPI_FILTER_NONE = 0,  /* leave colours alone; only shadow removal and adjustments apply */
+  LIPI_FILTER_AUTO = 1,  /* clean document look: gray if the page has no colour content, else colour */
+  LIPI_FILTER_BW = 2,    /* pure black and white (gray output with values 0 and 255) */
+  LIPI_FILTER_GRAY = 3,  /* grayscale */
+  LIPI_FILTER_COLOR = 4  /* colour with an even white background */
+} lipi_filter;
+
+typedef struct lipi_enhance_options {
+  int filter;          /* a lipi_filter value; anything else is rejected */
+  int remove_shadows;  /* non-zero: even out uneven lighting and shadows first */
+  float brightness;    /* -1 (darker) to 1 (brighter); 0 leaves it unchanged */
+  float contrast;      /* -1 (flatter) to 1 (stronger); 0 leaves it unchanged */
+} lipi_enhance_options;
+
+/* Auto filter with shadow removal and no brightness or contrast change. */
+LIPI_API lipi_enhance_options lipi_enhance_defaults(void);
+
+/* Cleans up a flattened page. Gray and BW produce a gray image; the other
+ * filters keep the source's colour, except Auto, which returns gray when the
+ * page has no colour content. Check the format of the result. */
+LIPI_API lipi_status lipi_enhance(const lipi_image_view* src, const lipi_enhance_options* options,
+                                  lipi_image** out);
 
 #ifdef __cplusplus
 }

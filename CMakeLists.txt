@@ -29,6 +29,10 @@ else()
   endif()
 endif()
 
+if(LIPI_BUILD_TESTS)
+  enable_testing()
+endif()
+
 add_subdirectory(core)
 
 if(LIPI_BUILD_CLI AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cli/CMakeLists.txt")
@@ -36,6 +40,5 @@ if(LIPI_BUILD_CLI AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cli/CMakeLists.txt")
 endif()
 
 if(LIPI_BUILD_TESTS)
-  enable_testing()
   add_subdirectory(tests)
 endif()
