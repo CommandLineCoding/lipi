@@ -43,6 +43,17 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
+To include the learned detector, build ncnn once and point CMake at it:
+
+```bash
+git clone --depth 1 --branch 20261020 https://github.com/Tencent/ncnn.git
+cmake -S ncnn -B ncnn/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DNCNN_VULKAN=OFF -DNCNN_BUILD_TOOLS=OFF \
+  -DNCNN_BUILD_EXAMPLES=OFF -DNCNN_BUILD_BENCHMARK=OFF -DNCNN_BUILD_TESTS=OFF -DNCNN_OPENMP=OFF \
+  -DNCNN_SIMPLEOCV=ON -DCMAKE_INSTALL_PREFIX=$PWD/ncnn-install
+cmake --build ncnn/build && cmake --install ncnn/build
+cmake -S . -B build -G Ninja -DLIPI_WITH_NCNN=ON -DCMAKE_PREFIX_PATH=$PWD/ncnn-install
+```
+
 Add `-DLIPI_SANITIZE=ON` (and `-DCMAKE_BUILD_TYPE=Debug`) to build with AddressSanitizer and UndefinedBehaviorSanitizer, as CI does. The core has no third-party dependencies; single-header libraries used by the CLI and tests live in `third_party/` with their licenses.
 
 ### App

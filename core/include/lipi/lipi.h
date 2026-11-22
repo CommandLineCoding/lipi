@@ -126,6 +126,34 @@ LIPI_API lipi_status lipi_detect_page_classical(const lipi_image_view* src, lipi
 LIPI_API lipi_status lipi_refine_quad(const lipi_image_view* src, const lipi_quad* in_quad,
                                       lipi_quad* out_quad);
 
+/* Learned page detector. The model is a small network (see docs/ARCHITECTURE.md)
+ * that finds the page corners and the page orientation in one pass. The core is
+ * built with an inference backend (ncnn) only when LIPI_WITH_NCNN is set;
+ * without it, lipi_detector_available() returns 0 and creating a detector fails
+ * with LIPI_ERR_UNSUPPORTED. */
+typedef struct lipi_detection {
+  lipi_quad quad;   /* page corners in source pixels, in the usual order */
+  float confidence; /* lowest corner heat-map peak, 0 to 1; low values mean "unsure" */
+  int orientation;  /* 0-3: 90 degree clockwise turns that make the flattened page upright */
+} lipi_detection;
+
+typedef struct lipi_detector lipi_detector;
+
+LIPI_API int lipi_detector_available(void);
+
+/* Creates a detector from an ncnn model (a text .param and a .bin). The buffers
+ * are copied. num_threads <= 0 picks a default. */
+LIPI_API lipi_status lipi_detector_create(const void* param, size_t param_size, const void* weights,
+                                          size_t weights_size, int num_threads, lipi_detector** out);
+
+/* Runs the model on a whole image. The image is area-averaged to the model's
+ * input size, so any resolution works. Returns LIPI_ERR_NOT_FOUND if the
+ * network's corners do not form a valid quad. */
+LIPI_API lipi_status lipi_detector_detect(lipi_detector* detector, const lipi_image_view* src,
+                                          lipi_detection* out);
+
+LIPI_API void lipi_detector_free(lipi_detector* detector);
+
 #ifdef __cplusplus
 }
 #endif
