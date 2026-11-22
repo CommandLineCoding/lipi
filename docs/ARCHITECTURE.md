@@ -68,7 +68,7 @@ Every change to the pipeline or a model is measured by the harness in `ml/`, wit
 
 ## 4. Performance
 
-The pipeline is measured with `lipi-cli bench` (per-stage latency) and `ml/tools/bench_pdf.py` (PDF size), see [ml/README.md](../ml/README.md). So far only a desktop CPU has been measured: one thread, a 2000 x 1500 photo, detection 41 ms, 360 ms for the whole scan. Phone numbers are still to be taken ([#9](https://github.com/CommandLineCoding/lipi/issues/9)).
+The pipeline is measured with `lipi-cli bench` (per-stage latency) and `ml/tools/bench_pdf.py` (PDF size), see [ml/README.md](../ml/README.md). So far only a desktop CPU has been measured: one thread, a 2000 x 1500 photo, detection 27 ms, 217 ms for the whole scan. Phone numbers are still to be taken ([#9](https://github.com/CommandLineCoding/lipi/issues/9)).
 
 Device tiers used for targets, which are goals and not yet measurements:
 

@@ -95,4 +95,4 @@ From `tools/bench_pdf.py` on the 97 real validation photos at 2000 x 1500, with 
 
 B&W pages are not smaller because they are still stored as JPEG; real bi-level and MRC compression is planned ([#66](https://github.com/CommandLineCoding/lipi/issues/66)).
 
-Time per stage for one 2000 x 1500 photo (median of the per-image medians over 20 runs): detection 41 ms (most of it resizing the photo down to the model's 256 x 256 input; the network itself takes about 9 ms), flattening 120 ms, clean-up 158 ms, straightening 74 ms, 360 ms in all. Live preview only runs detection, on a smaller frame.
+Time per stage for one 2000 x 1500 photo (median of the per-image medians over 20 runs): detection 27 ms (most of it resizing the photo down to the model's 256 x 256 input; the network itself takes about 9 ms), flattening 73 ms, clean-up 92 ms, straightening 38 ms, 217 ms in all, measured on an otherwise idle machine. Live preview only runs detection, on a smaller frame.
