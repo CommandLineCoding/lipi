@@ -1,7 +1,9 @@
 // lipi-cli: run the Lipi core on image files from the command line.
 #include <sys/stat.h>
 
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -20,12 +22,12 @@ enum Exit { kOk = 0, kUsage = 1, kIo = 2, kNoPage = 3, kInternal = 4 };
 
 const char* kUsageText =
     "Usage:\n"
-    "  lipi-cli detect <image> [--model PREFIX] [--json]\n"
+    "  lipi-cli detect <image> [--model PREFIX] [--refine] [--json]\n"
     "      Find the page outline. Prints the four corners (top-left, top-right,\n"
     "      bottom-right, bottom-left, in pixels) and a confidence.\n"
     "  lipi-cli scan <image> -o <output> [--model PREFIX] [--quad x0,y0,x1,y1,x2,y2,x3,y3]\n"
     "                [--filter auto|bw|gray|color|none] [--brightness B] [--contrast C]\n"
-    "                [--no-shadow-removal] [--no-rotate] [--max-side N] [--debug-dir DIR]\n"
+    "                [--no-shadow-removal] [--no-rotate] [--refine] [--max-side N] [--debug-dir DIR]\n"
     "      Flatten the page, clean it up and save it upright (.png, .jpg or .bmp).\n"
     "      Without --quad the page is detected first. --filter picks the look (default\n"
     "      auto); brightness and contrast are between -1 and 1. --max-side caps the\n"
@@ -35,7 +37,10 @@ const char* kUsageText =
     "\n"
     "--model PREFIX uses the learned detector from PREFIX.ncnn.param and PREFIX.ncnn.bin\n"
     "(needs a build with LIPI_WITH_NCNN=ON). The classical detector is the fallback when\n"
-    "the model finds no page. With a model, scan also turns the page upright.\n"
+    "the model finds no page. With a model, scan also turns the page upright. --refine\n"
+    "nudges the model's corners onto the nearest page edges (a nudge of more than 2% of the\n"
+    "image diagonal is ignored); it is off by default because it did not improve results on\n"
+    "real photos.\n"
     "\n"
     "Exit codes: 0 success, 1 usage error, 2 file could not be read or written,\n"
     "3 no page found, 4 internal error.\n";
@@ -96,12 +101,25 @@ struct Found {
 };
 
 // Learned detector first (corners then refined on the full photo), classical detector as the fallback.
-lipi_status find_page(const lipi_image_view& view, const Model& model, Found* out) {
+struct Refine {
+  bool enabled = false;  // measured: on real photos it does not beat the model's own corners
+  float limit = 0.02f;  // largest corner move, as a fraction of the image diagonal, that is accepted
+};
+
+lipi_status find_page(const lipi_image_view& view, const Model& model, const Refine& refine, Found* out) {
   if (model.detector != nullptr) {
     lipi_detection det{};
     if (lipi_detector_detect(model.detector, &view, &det) == LIPI_OK) {
+      out->quad = det.quad;
       lipi_quad refined{};
-      out->quad = lipi_refine_quad(&view, &det.quad, &refined) == LIPI_OK ? refined : det.quad;
+      if (refine.enabled && lipi_refine_quad(&view, &det.quad, &refined) == LIPI_OK) {
+        // Snapping to an edge is only trusted for small moves; a big one means it found the wrong edge.
+        const double diag = std::hypot(static_cast<double>(view.width), static_cast<double>(view.height));
+        double worst = 0;
+        for (int i = 0; i < 4; ++i)
+          worst = std::max(worst, std::hypot(static_cast<double>(refined.p[i].x - det.quad.p[i].x), static_cast<double>(refined.p[i].y - det.quad.p[i].y)));
+        if (worst <= static_cast<double>(refine.limit) * diag) out->quad = refined;
+      }
       out->confidence = det.confidence;
       out->orientation = det.orientation;
       out->from_model = true;
@@ -163,9 +181,11 @@ bool parse_filter(const std::string& name, int* out) {
 int cmd_detect(const std::vector<std::string>& args) {
   std::string path, model_prefix;
   bool json = false;
+  Refine refine;
   for (size_t i = 0; i < args.size(); ++i) {
     const std::string& a = args[i];
     if (a == "--json") json = true;
+    else if (a == "--refine") refine.enabled = true;
     else if (a == "--model") {
       if (i + 1 >= args.size()) return usage_error("--model needs a value");
       model_prefix = args[++i];
@@ -185,7 +205,7 @@ int cmd_detect(const std::vector<std::string>& args) {
   const lipi_image_view view = img.view();
   Found f;
   const auto t0 = std::chrono::steady_clock::now();
-  const lipi_status s = find_page(view, model, &f);
+  const lipi_status s = find_page(view, model, refine, &f);
   const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
   if (s == LIPI_ERR_NOT_FOUND) {
     if (json) print_json(nullptr, ms);
@@ -210,6 +230,7 @@ int cmd_scan(const std::vector<std::string>& args) {
   int max_side = 2400;
   float brightness = 0, contrast = 0;
   bool shadows = true, rotate = true;
+  Refine refine;
   for (size_t i = 0; i < args.size(); ++i) {
     const std::string& a = args[i];
     auto next = [&](std::string* dst) {
@@ -227,7 +248,8 @@ int cmd_scan(const std::vector<std::string>& args) {
       if (!next(&v) || !parse_float(v, &brightness) || brightness < -1 || brightness > 1) return usage_error("--brightness needs a number between -1 and 1");
     } else if (a == "--contrast") {
       if (!next(&v) || !parse_float(v, &contrast) || contrast < -1 || contrast > 1) return usage_error("--contrast needs a number between -1 and 1");
-    } else if (a == "--no-shadow-removal") shadows = false;
+    } else if (a == "--refine") refine.enabled = true;
+    else if (a == "--no-shadow-removal") shadows = false;
     else if (a == "--no-rotate") rotate = false;
     else if (a == "--max-side") {
       if (!next(&v)) return usage_error("--max-side needs a value");
@@ -259,7 +281,7 @@ int cmd_scan(const std::vector<std::string>& args) {
       return kUsage;
     }
   } else {
-    const lipi_status s = find_page(view, model, &f);
+    const lipi_status s = find_page(view, model, refine, &f);
     if (s != LIPI_OK) return status_exit(s, "no page found");
   }
   int pw = 0, ph = 0;
