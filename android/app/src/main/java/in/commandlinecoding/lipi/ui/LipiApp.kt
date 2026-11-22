@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import `in`.commandlinecoding.lipi.LipiApplication
 import `in`.commandlinecoding.lipi.R
 import `in`.commandlinecoding.lipi.ui.components.HomeBottomBar
+import `in`.commandlinecoding.lipi.ui.camera.CameraScreen
 import `in`.commandlinecoding.lipi.ui.components.HomeTab
 import `in`.commandlinecoding.lipi.ui.library.LibraryScreen
 import `in`.commandlinecoding.lipi.ui.library.LibraryViewModel
@@ -37,6 +38,7 @@ object Routes {
     const val Library = "library"
     const val Settings = "settings"
     const val Camera = "camera"
+    const val Adjust = "adjust"
 }
 
 /** Root of the app: the navigation graph. Screens that are not built yet show a placeholder. */
@@ -62,7 +64,14 @@ fun LipiApp() {
                 }
             }
             composable(Routes.Settings) { HomeShell(HomeTab.Settings, nav) { Placeholder(stringResource(R.string.settings_title)) } }
-            composable(Routes.Camera) { Placeholder(stringResource(R.string.camera_title)) }
+            composable(Routes.Camera) {
+                CameraScreen(
+                    session = app.session,
+                    onClose = { nav.popBackStack() },
+                    onReview = { nav.navigate(Routes.Adjust) { launchSingleTop = true } },
+                )
+            }
+            composable(Routes.Adjust) { Placeholder(stringResource(R.string.adjust_title)) }
         }
     }
 }
