@@ -1,0 +1,160 @@
+{
+  "all": {
+    "corner_error": {
+      "mean": 0.00179,
+      "median": 0.00144,
+      "p95": 0.00368
+    },
+    "failures": 0,
+    "images": 2000,
+    "iou": {
+      "mean": 0.98658,
+      "median": 0.98974,
+      "p95": 0.99582
+    },
+    "iou_ge_90": 0.997,
+    "iou_ge_95": 0.985,
+    "latency_ms": {
+      "mean": 7.40735,
+      "median": 7.35,
+      "p95": 7.8942
+    },
+    "orientation_accuracy": 0.982
+  },
+  "kinds": {
+    "synthetic/document": {
+      "corner_error": {
+        "mean": 0.00151,
+        "median": 0.00123,
+        "p95": 0.0031
+      },
+      "failures": 0,
+      "images": 827,
+      "iou": {
+        "mean": 0.99025,
+        "median": 0.99179,
+        "p95": 0.99626
+      },
+      "iou_ge_90": 0.9988,
+      "iou_ge_95": 0.9964,
+      "latency_ms": {
+        "mean": 7.4182,
+        "median": 7.366,
+        "p95": 7.9057
+      },
+      "orientation_accuracy": 0.9964
+    },
+    "synthetic/id_card": {
+      "corner_error": {
+        "mean": 0.00241,
+        "median": 0.00192,
+        "p95": 0.00574
+      },
+      "failures": 0,
+      "images": 289,
+      "iou": {
+        "mean": 0.982,
+        "median": 0.98654,
+        "p95": 0.99379
+      },
+      "iou_ge_90": 0.9965,
+      "iou_ge_95": 0.9516,
+      "latency_ms": {
+        "mean": 7.40324,
+        "median": 7.351,
+        "p95": 7.8916
+      },
+      "orientation_accuracy": 1.0
+    },
+    "synthetic/notes": {
+      "corner_error": {
+        "mean": 0.00147,
+        "median": 0.00132,
+        "p95": 0.00267
+      },
+      "failures": 0,
+      "images": 261,
+      "iou": {
+        "mean": 0.99099,
+        "median": 0.99218,
+        "p95": 0.99631
+      },
+      "iou_ge_90": 1.0,
+      "iou_ge_95": 1.0,
+      "latency_ms": {
+        "mean": 7.39817,
+        "median": 7.367,
+        "p95": 7.8
+      },
+      "orientation_accuracy": 1.0
+    },
+    "synthetic/receipt": {
+      "corner_error": {
+        "mean": 0.00174,
+        "median": 0.00139,
+        "p95": 0.00302
+      },
+      "failures": 0,
+      "images": 418,
+      "iou": {
+        "mean": 0.98251,
+        "median": 0.98712,
+        "p95": 0.99497
+      },
+      "iou_ge_90": 0.9904,
+      "iou_ge_95": 0.9737,
+      "latency_ms": {
+        "mean": 7.39946,
+        "median": 7.327,
+        "p95": 7.92315
+      },
+      "orientation_accuracy": 0.9761
+    },
+    "synthetic/whiteboard": {
+      "corner_error": {
+        "mean": 0.00256,
+        "median": 0.00224,
+        "p95": 0.00504
+      },
+      "failures": 0,
+      "images": 205,
+      "iou": {
+        "mean": 0.98086,
+        "median": 0.98258,
+        "p95": 0.9928
+      },
+      "iou_ge_90": 1.0,
+      "iou_ge_95": 0.9902,
+      "latency_ms": {
+        "mean": 7.39716,
+        "median": 7.33,
+        "p95": 7.8638
+      },
+      "orientation_accuracy": 0.8878
+    }
+  },
+  "sources": {
+    "synthetic": {
+      "corner_error": {
+        "mean": 0.00179,
+        "median": 0.00144,
+        "p95": 0.00368
+      },
+      "failures": 0,
+      "images": 2000,
+      "iou": {
+        "mean": 0.98658,
+        "median": 0.98974,
+        "p95": 0.99582
+      },
+      "iou_ge_90": 0.997,
+      "iou_ge_95": 0.985,
+      "latency_ms": {
+        "mean": 7.40735,
+        "median": 7.35,
+        "p95": 7.8942
+      },
+      "orientation_accuracy": 0.982
+    }
+  }
+}

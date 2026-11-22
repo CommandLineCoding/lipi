@@ -98,3 +98,15 @@ B&W pages are not smaller because they are still stored as JPEG; real bi-level a
 Time per stage for one 2000 x 1500 photo (median of the per-image medians over 20 runs): detection 27 ms (most of it resizing the photo down to the model's 256 x 256 input; the network itself takes about 9 ms), flattening 73 ms, clean-up 92 ms, straightening 38 ms, 217 ms in all, measured on an otherwise idle machine. Live preview only runs detection, on a smaller frame.
 
 On a phone (Samsung SM-G781B, Snapdragon 865, `lipi-cli` cross-compiled with the Android NDK, one thread): detection takes 30.6 ms on a 640 x 480 preview frame (20.2 ms with two threads, 15.0 ms with four), and a whole scan takes 52 ms for 640 x 480, 167 ms for 2000 x 1500 and 492 ms for 12 megapixels ([report](reports/on-device-sm-g781b.json)).
+
+### Retraining with ID-card data, and the small model
+
+A second training run added 2,400 MIDV ID-card frames to the data ([dataset card](../models/datasets/lipi-corpus.md)); a third run trained a narrower network (width 0.6) on the same data. All three are scored on the same held-out sets, all through ONNX (the ncnn files give identical results). The paired bootstrap compares per-photo IoU on the 287 real test photos.
+
+| Model | Real test: mean / median IoU, share >= 0.90 | Synthetic test: mean IoU, orientation | Parameters | Phone, 1 thread (640 x 480 frame) |
+|---|---|---|---|---|
+| PageNet (shipped) | 0.916 / 0.977, 78.4% | 0.988, 98.6% | 687,145 | 30.3 ms |
+| Retrained with MIDV (not shipped) | 0.924 / 0.976, 81.2% | 0.987, 98.2% | 687,145 | same network |
+| [PageNet small](../models/page-net-small/MODEL_CARD.md) | 0.919 / 0.972, 80.5% | 0.982, 97.4% | 255,608 | 16.6 ms |
+
+The MIDV retrain is +0.008 mean IoU on real test photos (95% interval +0.002 to +0.016; share at 0.90: +2.8 points, interval -0.7 to +6.3; better on 58 photos, worse on 45, about equal on 184), and slightly worse on synthetic pages, so it was not shipped. The small model is within noise of PageNet on real photos (+0.003, interval -0.004 to +0.010) and 45% faster on the phone, but worse on synthetic pages and on orientation. Reports: `reports/page-net-v3-*.json`, `reports/page-net-small-*.json`, [`reports/on-device-small-sm-g781b.json`](reports/on-device-small-sm-g781b.json).

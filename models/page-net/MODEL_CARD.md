@@ -52,6 +52,10 @@ The ncnn model gives the same numbers as the ONNX one, so the 16-bit weights and
 
 Speed, one thread of an x86 desktop CPU: about 7 ms with ONNX Runtime, about 9 ms through the core's ncnn detector including resizing the photo. On one phone, a Samsung SM-G781B (Snapdragon 865), detection of a 640 x 480 preview frame takes 30.6 ms on one thread, 20.2 ms on two and 15.0 ms on four, so 30 frames per second is reachable but the 10 ms per frame goal is not met ([report](../../ml/reports/on-device-sm-g781b.json)). Other devices have not been measured.
 
+## A later attempt with ID-card data (not shipped)
+
+PageNet was retrained with 2,400 ID-card frames from MIDV added (training only, otherwise the same recipe and checkpoint choice; see [the dataset card](../datasets/lipi-corpus.md) for the data and its CC BY-SA licence). On the held-out real test photos the result was slightly better: mean IoU 0.924 against 0.916 (a paired bootstrap gives +0.008, 95% interval +0.002 to +0.016), 81.2% of pages at IoU 0.90 or better against 78.4% (interval -0.7 to +6.3 points), median IoU unchanged (0.976 against 0.977). On the real validation photos the interval included zero, and on synthetic pages it was slightly worse (mean IoU 0.987 against 0.988, orientation 98.2% against 98.6%). That is not clearly better on real photos and not as good on synthetic ones, so PageNet was kept as it is. The reports are in [`ml/reports/`](../../ml/reports/) (`page-net-v3-*.json`). The narrower [PageNet small](../page-net-small/MODEL_CARD.md) came out of the same run.
+
 ## Limitations
 
 - **Real photos are the weak spot.** 22% of real test pages are below IoU 0.90, and the 95th percentile of corner error is 7.5% of the diagonal. Failures are mostly pages that are partly out of frame, held in a hand, or low in contrast against the background.
