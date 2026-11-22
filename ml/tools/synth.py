@@ -24,6 +24,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from lipi_eval.corpus import write_jsonl
 from lipi_eval.quad import sort_quad
 
+cv2.setNumThreads(1)  # shards run as separate processes; avoid oversubscribing the CPU
+cv2.ocl.setUseOpenCL(False)  # OpenCL kernel compilation makes every process slow to start on GPU machines
+
 WORDS = {
     "latin": ("the of and to in is that for it as was with be by on not he this are or his from at "
               "which but have an had they you were their one all we can her has there been if more "
@@ -261,7 +264,7 @@ def make_background(rng, w, h):
             x, y = rng.randint(-20, w), rng.randint(-20, h)
             sz = rng.randint(20, 160)
             (d.ellipse if rng.random() < 0.4 else d.rectangle)([x, y, x + sz, y + rng.randint(15, sz)], fill=c)
-        bg = np.asarray(img.filter(ImageFilter.GaussianBlur(1.2)), dtype=np.float32)
+        bg = np.asarray(img.filter(ImageFilter.GaussianBlur(1.2))).astype(np.float32)
     return np.clip(bg, 0, 255)
 
 
@@ -321,7 +324,7 @@ def render_scene(rng, fonts, long_side=512):
     ss = 2  # supersample the composite for clean edges
     W, H = iw * ss, ih * ss
     bg = make_background(rng, W, H)
-    src = np.asarray(page, dtype=np.float32)
+    src = np.asarray(page).astype(np.float32)  # casting afterwards is much faster on older Pillow/NumPy
     # paper lighting and a soft cast shadow on the page itself
     yy, xx = np.mgrid[0:ph, 0:pw].astype(np.float32)
     light = 1.0 - rng.uniform(0, 0.25) * ((xx / pw) * rng.choice([-1, 1]) + (yy / ph) * rng.choice([-1, 1]) + 1) / 2
