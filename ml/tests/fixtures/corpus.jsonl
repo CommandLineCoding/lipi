@@ -1,0 +1,5 @@
+{"id":"syn-1","image":"a.jpg","width":400,"height":300,"quad":[[50,40],[350,40],[350,240],[50,240]],"orientation":1,"source":"synthetic","license":"generated","split":"test"}
+{"id":"syn-2","image":"b.jpg","width":400,"height":300,"quad":[[20,20],[380,20],[380,280],[20,280]],"orientation":0,"source":"synthetic","license":"generated","split":"test"}
+{"id":"syn-3","image":"c.jpg","width":400,"height":300,"quad":[[100,60],[300,60],[300,240],[100,240]],"orientation":2,"source":"synthetic","license":"generated","split":"test"}
+{"id":"real-1","image":"d.jpg","width":400,"height":300,"quad":[[60,30],[340,30],[340,260],[60,260]],"orientation":null,"source":"real","license":"CC BY 4.0","split":"test"}
+{"id":"real-2","image":"e.jpg","width":400,"height":300,"quad":[[30,30],[370,30],[370,270],[30,270]],"orientation":null,"source":"real","license":"CC BY 4.0","split":"test"}

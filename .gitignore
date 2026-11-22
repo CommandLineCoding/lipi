@@ -36,6 +36,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
 
 # Models and datasets are tracked via checksums/manifests, not committed raw
 *.onnx.tmp
