@@ -35,3 +35,20 @@ python -m lipi_eval.score --corpus data/synth-test/test.jsonl --pred preds.jsonl
 The report has, per source and overall: mean, median and 95th percentile corner error (mean corner distance divided by the image diagonal, taking the best of the four cyclic shifts), IoU of the page quad, the share of images above 0.90 and 0.95 IoU, failures (no quad, counted as IoU 0), latency and orientation accuracy. Keys are sorted and numbers rounded so the file can be diffed in CI; [tests/fixtures/](tests/fixtures/) holds a tiny example that the tests compare against.
 
 Latency here is wall time on the machine that ran the detector. It says nothing about phones; the on-device target is measured separately ([#9](https://github.com/CommandLineCoding/lipi/issues/9)).
+
+## Baselines
+
+Reports are kept in [reports/](reports/). They are produced by the classical detector in the core (`lipi-cli detect`, Release build) through [tools/predict_cli.py](tools/predict_cli.py):
+
+```bash
+python tools/predict_cli.py --cli ../build/cli/lipi-cli --corpus data/real/test.jsonl --out preds.jsonl
+python -m lipi_eval.score --corpus data/real/test.jsonl --pred preds.jsonl --out report.json
+```
+
+| Detector | Split | Images | Found | Corner error (median / p95) | IoU (median) | IoU >= 0.90 | Latency (mean, desktop) |
+|---|---|---|---|---|---|---|---|
+| Classical | synthetic test | 2000 | 69% | 0.08% / 4.4% | 0.978 | 61% | 18.6 ms |
+| Classical | real validation | 100 | 84% | 1.8% / 12.9% | 0.830 | 43% | 18.3 ms |
+| Classical | real test | 287 | 83% | 0.95% / 17.4% | 0.898 | 49% | 20.0 ms |
+
+Corner error is a fraction of the image diagonal. IoU counts a missed page as 0, so it also reflects how often a page is found. The classical detector is accurate when it locks onto the page outline and misses it too often on cluttered backgrounds, which is what the learned detector is meant to fix. Latency is desktop wall time including process start-up, not a phone measurement.
