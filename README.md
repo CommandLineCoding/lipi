@@ -38,7 +38,7 @@ Features are grouped by priority. `P0` is the first release and `P1` comes after
 |---|---|
 | App | Kotlin, Jetpack Compose (Material 3), CameraX |
 | Core | Portable C++ behind a C ABI, called through NDK/JNI |
-| ML runtime | ONNX Runtime, or ncnn ([#16](https://github.com/CommandLineCoding/lipi/issues/16)) |
+| ML runtime | ncnn, converted from PyTorch with pnnx (ONNX Runtime was measured and rejected for its size, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) |
 | Storage | Room / SQLite with FTS5 |
 | Background work | WorkManager |
 | Targets | Android, `arm64-v8a` first, with 16 KB page-aligned native libraries |

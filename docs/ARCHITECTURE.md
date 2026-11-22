@@ -16,9 +16,19 @@ Three concerns, kept separate. Compose screens follow the [Figma draft](https://
 
 The whole image pipeline lives here: corner detection, perspective correction, orientation and deskew, filters, and the PDF writer. The public surface is a C header with opaque handles and no Android types, so the same code runs in the desktop CLI, in the app through JNI, and later on iOS. See [CORE_API.md](CORE_API.md).
 
-**Models — ONNX Runtime**
+**Models — ncnn**
 
-Small networks run through ONNX Runtime (ncnn is the alternative, [#16](https://github.com/CommandLineCoding/lipi/issues/16)): a page-corner detector, an orientation classifier and, later, OCR and layout models. A small core set is bundled, and the rest are downloadable with checksums. Every model has a model card, a dataset card and its training script in `models/` and `ml/`.
+Small networks run through [ncnn](https://github.com/Tencent/ncnn) (BSD-3-Clause): a page-corner detector that also predicts the page orientation and, later, OCR and layout models. A small core set is bundled, and the rest are downloadable with checksums. Every model has a model card, a dataset card and its training script in `models/` and `ml/`.
+
+ncnn was chosen over ONNX Runtime for three reasons, measured on the page detector:
+
+- **Size.** The prebuilt full ONNX Runtime library for Android arm64 is 35 MB; ncnn's arm64 static library is 7.7 MB before linking, and it only pulls in the layers a model uses.
+- **Build from source.** ncnn builds with plain CMake and no dependencies, which F-Droid's build-from-source rule needs. ONNX Runtime would need a custom minimal build.
+- **Portability.** The same code and model run in the desktop CLI and on Android.
+
+Speed is a wash on a desktop CPU. For the same page detector (687 thousand parameters, 538 MFLOPs per 256 x 256 image), one thread of an x86 desktop: ONNX Runtime 1.32 takes a median 7.2 ms per image, and the ncnn detector in the core 9.3 ms, which includes resizing the photo and copying it into the network. Both return the same corners to within 0.01 pixel. Phone timings have not been measured yet ([#9](https://github.com/CommandLineCoding/lipi/issues/9)); the on-device target of 10 ms per frame is not yet confirmed.
+
+The model is trained in PyTorch, exported to ONNX for checking, and converted to ncnn with pnnx. The core is built with the detector only when `LIPI_WITH_NCNN=ON`; without it everything else, including the classical detector, still builds and runs. The model's contract is: input blob `in0`, a 3 x 256 x 256 float image with RGB values 0 to 255 (the graph normalises it); outputs `out0` (four corners, x and y in 0 to 1, in the usual order), `out1` (heat-map peak per corner) and `out2` (four orientation logits).
 
 ---
 
