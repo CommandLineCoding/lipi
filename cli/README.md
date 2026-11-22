@@ -12,8 +12,8 @@ cmake -S . -B build -G Ninja && cmake --build build
 
 | Command | What it does |
 |---|---|
-| `detect <image> [--json]` | Finds the page outline and prints its four corners (top-left, top-right, bottom-right, bottom-left, in pixels), a confidence and the time taken. `--json` prints one JSON line, which `ml/tools/predict_cli.py` reads. |
-| `scan <image> -o <output>` | Finds the page, estimates its real aspect ratio and flattens it to an upright image (`.png`, `.jpg` or `.bmp`). |
+| `detect <image> [--model PREFIX] [--json]` | Finds the page outline and prints its four corners (top-left, top-right, bottom-right, bottom-left, in pixels), a confidence and the time taken. `--json` prints one JSON line (with the page orientation and which detector found it), which `ml/tools/predict_cli.py` reads. |
+| `scan <image> -o <output>` | Finds the page, estimates its real aspect ratio, flattens it, cleans it up and saves it upright (`.png`, `.jpg` or `.bmp`). |
 | `--version`, `--help` | |
 
 Options for `scan`:
@@ -21,10 +21,16 @@ Options for `scan`:
 | Option | Meaning |
 |---|---|
 | `--quad x0,y0,x1,y1,x2,y2,x3,y3` | Use these corners instead of detecting them (top-left, top-right, bottom-right, bottom-left). |
+| `--filter auto\|bw\|gray\|color\|none` | The look of the result, default `auto` (gray for a page with no colour content, else colour). |
+| `--brightness B`, `--contrast C` | Between -1 and 1, default 0. |
+| `--no-shadow-removal` | Keep the original lighting. |
+| `--no-rotate` | Do not turn the page upright using the detector's orientation. |
 | `--max-side N` | Cap the longer side of the result, default 2400. |
-| `--debug-dir DIR` | Save `01-input-quad.png` (the input with the outline drawn on it) and `02-flattened.png`. |
+| `--debug-dir DIR` | Save `01-input-quad.png` (the input with the outline drawn on it), `02-flattened.png` and `03-result.png`. |
 
-Filters (Auto, B&W, Gray, Color) are not wired in yet; they arrive with [#13](https://github.com/CommandLineCoding/lipi/issues/13).
+## Learned detector
+
+Build with `-DLIPI_WITH_NCNN=ON` (see [CONTRIBUTING.md](../CONTRIBUTING.md)), then pass `--model PREFIX`, where `PREFIX.ncnn.param` and `PREFIX.ncnn.bin` are an exported model. The learned detector finds the corners and the page orientation; its corners are then refined on the full photo, and the classical detector is the fallback if it finds no page. Without `--model` the classical detector is used.
 
 ## Exit codes
 
