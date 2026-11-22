@@ -1,0 +1,15 @@
+{
+  "build": "lipi-cli built with NDK 28.2, arm64-v8a, Release, ncnn 20261020 prebuilt for Android, learned detector",
+  "device": "Samsung SM-G781B (Snapdragon 865), Android 13",
+  "note": "Medians and 95th percentiles in milliseconds over 15 to 20 runs after a warm-up, default CPU scheduling, one thread unless stated. The 4000 x 3000 photo is the 2000 x 1500 test photo scaled up, so it has the cost of 12 megapixels but less fine detail.",
+  "preview_detection_640x480": {
+    "threads_1": {"median_ms": 30.6, "p95_ms": 31.3},
+    "threads_2": {"median_ms": 20.2, "p95_ms": 23.2},
+    "threads_4": {"median_ms": 15.0, "p95_ms": 15.7}
+  },
+  "scan_one_thread": {
+    "640x480": {"detect": [30.09, 30.60], "warp": [3.88, 3.93], "enhance": [10.65, 10.76], "deskew": [6.76, 6.87], "total": [52.24, 52.88]},
+    "2000x1500": {"detect": [38.58, 42.78], "warp": [37.01, 37.25], "enhance": [57.51, 58.01], "deskew": [25.54, 26.07], "total": [167.29, 172.71]},
+    "4000x3000": {"detect": [63.10, 66.10], "warp": [147.72, 148.05], "enhance": [212.97, 215.08], "deskew": [35.74, 37.57], "total": [491.70, 494.25]}
+  }
+}

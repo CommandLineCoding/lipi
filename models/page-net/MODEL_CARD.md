@@ -50,7 +50,7 @@ For comparison, the classical detector scores a median IoU of 0.898 on the same 
 
 The ncnn model gives the same numbers as the ONNX one, so the 16-bit weights and the conversion lose nothing measurable. Nudging the corners onto page edges afterwards (`lipi-cli --refine`) made the real results slightly worse (median corner error 0.58%), so it is off by default.
 
-Speed, one thread of an x86 desktop CPU: about 7 ms with ONNX Runtime, about 9 ms through the core's ncnn detector including resizing the photo. Phone speed has not been measured yet ([#9](https://github.com/CommandLineCoding/lipi/issues/9)), so the 10 ms per frame target is unconfirmed.
+Speed, one thread of an x86 desktop CPU: about 7 ms with ONNX Runtime, about 9 ms through the core's ncnn detector including resizing the photo. On one phone, a Samsung SM-G781B (Snapdragon 865), detection of a 640 x 480 preview frame takes 30.6 ms on one thread, 20.2 ms on two and 15.0 ms on four, so 30 frames per second is reachable but the 10 ms per frame goal is not met ([report](../../ml/reports/on-device-sm-g781b.json)). Other devices have not been measured.
 
 ## Limitations
 

@@ -51,6 +51,7 @@ const char* kUsageText =
     "                         it did not improve results on real photos; moves over 2% of the image\n"
     "                         diagonal are ignored)\n"
     "  --max-side N           cap the longer side of the page (default 2400)\n"
+    "  --threads N            threads for the learned detector (default 1)\n"
     "\n"
     "Exit codes: 0 success, 1 usage error, 2 file could not be read or written,\n"
     "3 no page found, 4 internal error.\n";
@@ -87,7 +88,7 @@ struct Model {
   ~Model() { lipi_detector_free(detector); }
 
   // Returns 0 on success (or when no prefix was given), otherwise a process exit code.
-  int load(const std::string& prefix) {
+  int load(const std::string& prefix, int threads = 1) {
     if (prefix.empty()) return kOk;
     if (!lipi_detector_available()) {
       std::fprintf(stderr, "lipi-cli: --model needs a build with LIPI_WITH_NCNN=ON\n");
@@ -98,7 +99,7 @@ struct Model {
       std::fprintf(stderr, "lipi-cli: cannot read %s.ncnn.param and %s.ncnn.bin\n", prefix.c_str(), prefix.c_str());
       return kIo;
     }
-    const lipi_status s = lipi_detector_create(param.data(), param.size(), weights.data(), weights.size(), 1, &detector);
+    const lipi_status s = lipi_detector_create(param.data(), param.size(), weights.data(), weights.size(), threads, &detector);
     if (s != LIPI_OK) {
       std::fprintf(stderr, "lipi-cli: cannot load the model: %s\n", lipi_status_string(s));
       return kIo;
@@ -200,6 +201,7 @@ struct PageOptions {
   float brightness = 0, contrast = 0;
   bool shadows = true, rotate = true, deskew = true;
   int max_side = 2400;
+  int threads = 1;
   Refine refine;
 };
 
@@ -227,6 +229,12 @@ int parse_page_option(const std::vector<std::string>& args, size_t* i, PageOptio
     if (!value(&v)) { usage_error("--max-side needs a value"); return -1; }
     o->max_side = std::atoi(v.c_str());
     if (o->max_side < 16 || o->max_side > 16384) { usage_error("--max-side must be between 16 and 16384"); return -1; }
+    return 1;
+  }
+  if (a == "--threads") {
+    if (!value(&v)) { usage_error("--threads needs a value"); return -1; }
+    o->threads = std::atoi(v.c_str());
+    if (o->threads < 1 || o->threads > 32) { usage_error("--threads must be between 1 and 32"); return -1; }
     return 1;
   }
   if (a == "--no-shadow-removal") { o->shadows = false; return 1; }
@@ -348,7 +356,7 @@ int cmd_detect(const std::vector<std::string>& args) {
   }
   if (path.empty()) return usage_error("detect needs an input image");
   Model model;
-  if (const int rc = model.load(o.model_prefix)) return rc;
+  if (const int rc = model.load(o.model_prefix, o.threads)) return rc;
   lipi_cli::Pixels img;
   std::string err;
   if (!lipi_cli::load_image(path, &img, &err)) {
@@ -403,7 +411,7 @@ int cmd_scan(const std::vector<std::string>& args) {
   if (const int rc = finish_options(&o)) return rc;
 
   Model model;
-  if (const int rc = model.load(o.model_prefix)) return rc;
+  if (const int rc = model.load(o.model_prefix, o.threads)) return rc;
   lipi_cli::Pixels img;
   std::string err;
   if (!lipi_cli::load_image(in, &img, &err)) {
@@ -486,7 +494,7 @@ int cmd_pdf(const std::vector<std::string>& args) {
   if (const int rc = finish_options(&o)) return rc;
 
   Model model;
-  if (const int rc = model.load(o.model_prefix)) return rc;
+  if (const int rc = model.load(o.model_prefix, o.threads)) return rc;
   FILE* file = std::fopen(out.c_str(), "wb");
   if (file == nullptr) {
     std::fprintf(stderr, "lipi-cli: cannot write %s\n", out.c_str());
@@ -568,7 +576,7 @@ int cmd_bench(const std::vector<std::string>& args) {
   if (path.empty()) return usage_error("bench needs an input image");
   if (const int rc = finish_options(&o)) return rc;
   Model model;
-  if (const int rc = model.load(o.model_prefix)) return rc;
+  if (const int rc = model.load(o.model_prefix, o.threads)) return rc;
   lipi_cli::Pixels img;
   std::string err;
   if (!lipi_cli::load_image(path, &img, &err)) {
