@@ -35,7 +35,8 @@ typedef enum lipi_status {
   LIPI_ERR_INVALID_ARGUMENT = 1,
   LIPI_ERR_OUT_OF_MEMORY = 2,
   LIPI_ERR_UNSUPPORTED = 3,
-  LIPI_ERR_INTERNAL = 4
+  LIPI_ERR_INTERNAL = 4,
+  LIPI_ERR_NOT_FOUND = 5 /* no page could be found; an expected outcome, not a fault */
 } lipi_status;
 
 /* Returns a static, human-readable description of a status code. */
@@ -111,6 +112,19 @@ LIPI_API lipi_status lipi_estimate_page_size(const lipi_quad* quad, int image_wi
  * resampling. The output has the same pixel format as the source. */
 LIPI_API lipi_status lipi_warp_quad(const lipi_image_view* src, const lipi_quad* quad,
                                     int out_width, int out_height, lipi_image** out);
+
+/* Finds the page outline with classical image processing (edges, Hough lines,
+ * quad search) and refines its corners to sub-pixel accuracy. On success
+ * *out_quad is in the corner order described above, in src pixels, and
+ * *out_confidence (optional, may be NULL) is between 0 and 1.
+ * Returns LIPI_ERR_NOT_FOUND when no plausible page is visible. */
+LIPI_API lipi_status lipi_detect_page_classical(const lipi_image_view* src, lipi_quad* out_quad,
+                                                float* out_confidence);
+
+/* Moves the corners of a rough quad onto the nearest page edges. The corners
+ * keep their order. If an edge cannot be refined, its coarse position is kept. */
+LIPI_API lipi_status lipi_refine_quad(const lipi_image_view* src, const lipi_quad* in_quad,
+                                      lipi_quad* out_quad);
 
 #ifdef __cplusplus
 }
