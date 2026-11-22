@@ -1,46 +1,91 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+[![Milestones](https://img.shields.io/github/milestones/open/CommandLineCoding/lipi?style=flat-square&color=blue)](https://github.com/CommandLineCoding/lipi/milestones)
+[![Issues](https://img.shields.io/github/issues/CommandLineCoding/lipi?style=flat-square)](https://github.com/CommandLineCoding/lipi/issues)
+
+---
+
 # Lipi
+Lipi is a privacy-first, open-source document scanner for Android. It finds the page in the camera view with an on-device model, flattens and cleans it up, and exports a PDF or image, with multi-script OCR (including Bengali and Hindi) planned for searchable PDFs. Everything runs on the phone, and the app needs no network permission.
 
-Open-source, offline-first document scanner for Android, with on-device ML edge detection and multi-script OCR (including Indic scripts such as Bengali and Hindi).
-
-> **Status:** planning. Nothing is released yet. See the [roadmap](#roadmap) and the [milestones](https://github.com/CommandLineCoding/lipi/milestones).
-
-## Principles
-
-- **Private by design.** No account, ads or trackers. Scanning and OCR run on the device and the app requests no network permission.
-- **Fully FOSS.** Aimed at F-Droid first, so no proprietary dependencies: no ML Kit, Firebase or Play Services. Reproducible builds, fastlane metadata.
-- **Portable core.** The image pipeline is a C++ library behind a C ABI with no Android types, so it can run in a desktop CLI (for testing and evaluation) and, later, on iOS.
-- **Measured.** An evaluation harness (corner error / IoU, CER / WER, latency per device tier, PDF size at fixed quality) comes before model work.
-
-## Planned stack
-
-| Layer | Choice |
-| --- | --- |
-| UI | Kotlin, Jetpack Compose, Material 3, CameraX |
-| Core | Portable C++ (NDK/JNI over a C ABI) |
-| ML runtime | ONNX Runtime (or ncnn) |
-| Storage | Room / SQLite with FTS5 |
-| Background work | WorkManager |
-| Targets | Android, arm64-v8a first; native libraries must be 16 KB page-aligned |
-
-Several of these are still open questions; each is tracked as a `decision` issue.
+> **Status:** planning. Nothing is released yet. The [milestones](https://github.com/CommandLineCoding/lipi/milestones) and [issues](https://github.com/CommandLineCoding/lipi/issues) show what is planned and what is free to pick up.
 
 ## Design
 
-UI draft: [FOSS Document Scanner – App Design](https://www.figma.com/design/7BVcimN4rnR0zgMLh78RXF) (Library, Camera, Adjust corners, Enhance, Export, Settings). The draft has no components, tokens or dark theme yet; that work is tracked in the issues.
+The UI draft is in Figma: [FOSS Document Scanner – App Design](https://www.figma.com/design/7BVcimN4rnR0zgMLh78RXF). It has six screens: Library, Camera, Adjust corners, Enhance, Export, and Settings (models and privacy). It has no components, tokens or dark theme yet; those are tracked in [#23](https://github.com/CommandLineCoding/lipi/issues/23).
+
+## Features
+
+Features are grouped by priority. `P0` is the first release, and the same labels are on the issues.
+
+- **Live page detection (P0):** A small on-device model finds the four corners of the page in the camera preview, with the result smoothed across frames. Auto-capture takes the shot once the page is steady.
+- **Scanning essentials (P0):** Batch capture, manual corner adjustment with a magnifier, perspective correction, orientation and deskew, shadow removal, and the Auto, B&W, Gray and Color filters.
+- **Export and library (P0):** PDF and JPG export, written by Lipi's own PDF writer, and a local library of documents.
+- **Private by design (P0):** No account, ads or trackers. The app asks for no network permission, and CI will check that.
+- **OCR (P1):** On-device text recognition with downloadable language packs for Bengali and Hindi, searchable PDF, and full-text search over the library.
+- **More tools (P1):** Scan modes (document, ID card, book, whiteboard, receipt), merge/split/reorder, annotation and signing, PII redaction, glare reduction, dewarping, layout and tables, MRC compression, PDF/A, an app lock, and WebDAV, Nextcloud and Paperless-ngx upload.
+- **Later (P2):** Handwriting, document classification, semantic search, an optional small language-model pack, encrypted and signed PDFs, a widget and tablet layouts.
+
+## Principles
+
+- **Fully FOSS.** F-Droid comes first, so there are no proprietary dependencies: no ML Kit, Firebase or Play Services. Builds are reproducible, and store text lives in [metadata/](metadata/).
+- **Portable core.** The image pipeline is a C++ library behind a C ABI with no Android types, so it also runs in a desktop CLI and could later run on iOS.
+- **Measured.** An evaluation harness (corner error and IoU, CER and WER, latency per device tier, PDF size at fixed quality) comes before model work.
+- **Models have provenance.** Every model ships with a model card, a dataset card and its training script.
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| App | Kotlin, Jetpack Compose (Material 3), CameraX |
+| Core | Portable C++ behind a C ABI, called through NDK/JNI (C++ vs Rust is open: [#1](https://github.com/CommandLineCoding/lipi/issues/1)) |
+| ML runtime | ONNX Runtime, or ncnn ([#16](https://github.com/CommandLineCoding/lipi/issues/16)) |
+| Storage | Room / SQLite with FTS5 |
+| Background work | WorkManager |
+| Targets | Android, `arm64-v8a` first, with 16 KB page-aligned native libraries |
+| CI/CD | GitHub Actions |
 
 ## Roadmap
 
-1. **Core + desktop CLI:** image in, clean deskewed page out; test corpus, evaluation harness, first detector model.
-2. **Android v0.1:** CameraX capture, live quad detection, crop, enhance, PDF export, library. Released on F-Droid and GitHub.
-3. **v0.2:** OCR, searchable PDF, language packs, full-text search. Google Play.
-4. **v0.3+:** layout and tables, dewarp, redaction, compression.
+| Milestone | Goal |
+|---|---|
+| [v0.0.1 — Core & CLI](https://github.com/CommandLineCoding/lipi/milestones) | Image in, clean deskewed page out. Test corpus, evaluation harness, first detector model. |
+| [v0.1.0 — Android MVP](https://github.com/CommandLineCoding/lipi/milestones) | CameraX capture, live detection, crop, enhance, PDF export, library. Released on F-Droid and GitHub. |
+| [v0.2.0 — OCR & searchable PDF](https://github.com/CommandLineCoding/lipi/milestones) | On-device OCR, searchable PDF, language packs, full-text search. Google Play. |
+| [v0.3.0 — Layout, dewarp & redaction](https://github.com/CommandLineCoding/lipi/milestones) | Layout and tables, dewarping, redaction, compression. |
+| [Backlog](https://github.com/CommandLineCoding/lipi/milestones) | P2 ideas that are not scheduled yet. |
 
-Feature priorities are tracked with the `P0` / `P1` / `P2` labels.
+## Project Structure
+
+The layout below is the plan. Only the files at the top level exist so far (scaffolding is [#4](https://github.com/CommandLineCoding/lipi/issues/4) and [#25](https://github.com/CommandLineCoding/lipi/issues/25)).
+
+```
+lipi/
+├── .github/                  # Issue forms, PR template and GitHub Actions workflows
+├── docs/
+│   ├── ARCHITECTURE.md       # How the pieces fit together
+│   └── CORE_API.md           # C ABI contract of the core library
+├── metadata/                 # F-Droid / store listing metadata
+├── core/                     # Portable C++ image pipeline (C ABI, no Android types)
+├── cli/                      # Desktop CLI built on the core
+├── android/                  # Kotlin + Compose app
+├── ml/                       # Training scripts and the evaluation harness
+├── models/                   # Model cards, dataset cards and checksums
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CODE_OF_CONDUCT.md
+└── LICENSE
+```
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Project documentation lives in [docs/](docs/) and follows the Diátaxis structure.
+Contributions are welcome, and you don't need to know machine learning to help. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, how to claim an issue, and how to open a PR.
+
+- New here? Pick a [`good first issue`](https://github.com/CommandLineCoding/lipi/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+- See what's planned in the [milestones](https://github.com/CommandLineCoding/lipi/milestones).
+- Questions and ideas go in [Discussions](https://github.com/CommandLineCoding/lipi/discussions).
+
+Please also read the [Code of Conduct](CODE_OF_CONDUCT.md). To report a security issue, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
 ## License
 
-[MIT](LICENSE). Because the project is MIT-licensed, dependencies under (A)GPL cannot be bundled.
+Lipi is licensed under the MIT License. See [LICENSE](LICENSE) for details. Because of this, dependencies under (A)GPL cannot be bundled.

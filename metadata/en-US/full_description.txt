@@ -1,0 +1,11 @@
+Lipi is a private, open-source document scanner. Point the camera at a page and Lipi finds its edges, flattens it, cleans it up, and saves it as a PDF or image.
+
+Everything happens on your phone. There is no account, no ads, no trackers, and the app needs no network permission.
+
+Planned features:
+- Live page detection with an on-device model, and auto-capture
+- Batch scanning, manual corner adjustment with a magnifier, shadow removal, and Auto, B&W, Gray and Color filters
+- PDF and JPG export
+- Text recognition (OCR) for searchable PDFs, including Bengali and Hindi, with downloadable language packs
+
+Lipi is free software under the MIT license. The source code, models and training scripts are all public.

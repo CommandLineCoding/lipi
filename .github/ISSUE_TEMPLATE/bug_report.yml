@@ -1,0 +1,57 @@
+name: Bug report
+description: Something in the app, core or CLI doesn't work as expected
+title: "[BUG]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! For security problems, please use [private reporting](https://github.com/CommandLineCoding/lipi/security/advisories/new) instead.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      options:
+        - Android app
+        - Desktop CLI
+        - Page detection (wrong or missing corners)
+        - Enhancement or filters
+        - Export (PDF or image)
+        - OCR
+        - Build, CI or release
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the camera
+        2. Point it at a receipt on a dark table
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      placeholder: "0.1.0"
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      placeholder: "Pixel 7, Android 15"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Optional. `adb logcat` output helps a lot. Remove anything private first, and don't attach scans of real personal documents.
+      render: text

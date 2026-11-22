@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest an idea or improvement
+title: "[FEAT]: "
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Not sure it's a fit yet? Start a thread in [Discussions → Ideas](https://github.com/CommandLineCoding/lipi/discussions/categories/ideas) first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation, not the solution, e.g. "My scans of curved book pages come out with bent text when…"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of Lipi?
+      multiple: true
+      options:
+        - Android app
+        - Core / CLI
+        - Models and evaluation
+        - OCR
+        - Export
+        - Build, CI or release
+        - Docs
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to work on this myself
