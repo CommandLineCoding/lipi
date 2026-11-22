@@ -1,0 +1,48 @@
+{
+  "all": {
+    "corner_error": {
+      "mean": 0.01707,
+      "median": 0.00417,
+      "p95": 0.07449
+    },
+    "failures": 0,
+    "images": 287,
+    "iou": {
+      "mean": 0.91571,
+      "median": 0.97696,
+      "p95": 0.99261
+    },
+    "iou_ge_90": 0.784,
+    "iou_ge_95": 0.6794,
+    "latency_ms": {
+      "mean": 67.62599,
+      "median": 66.89,
+      "p95": 85.181
+    },
+    "orientation_accuracy": null
+  },
+  "sources": {
+    "real": {
+      "corner_error": {
+        "mean": 0.01707,
+        "median": 0.00417,
+        "p95": 0.07449
+      },
+      "failures": 0,
+      "images": 287,
+      "iou": {
+        "mean": 0.91571,
+        "median": 0.97696,
+        "p95": 0.99261
+      },
+      "iou_ge_90": 0.784,
+      "iou_ge_95": 0.6794,
+      "latency_ms": {
+        "mean": 67.62599,
+        "median": 66.89,
+        "p95": 85.181
+      },
+      "orientation_accuracy": null
+    }
+  }
+}

@@ -52,3 +52,16 @@ python -m lipi_eval.score --corpus data/real/test.jsonl --pred preds.jsonl --out
 | Classical | real test | 287 | 83% | 0.95% / 17.4% | 0.898 | 49% | 20.0 ms |
 
 Corner error is a fraction of the image diagonal. IoU counts a missed page as 0, so it also reflects how often a page is found. The classical detector is accurate when it locks onto the page outline and misses it too often on cluttered backgrounds, which is what the learned detector is meant to fix. Latency is desktop wall time including process start-up, not a phone measurement.
+
+### Learned detector
+
+[PageNet](../models/page-net/MODEL_CARD.md), run through the ncnn detector in `lipi-cli --model` (corners as the model predicts them, no refinement):
+
+| Detector | Split | Images | Found | Corner error (median / p95) | IoU (median) | IoU >= 0.90 |
+|---|---|---|---|---|---|---|
+| PageNet | synthetic test | 2000 | 100% | 0.14% / 0.33% | 0.990 | 100% |
+| PageNet | real validation | 100 | 100% | 0.51% / 8.9% | 0.968 | 75% |
+| PageNet | real test | 287 | 100% | 0.42% / 7.5% | 0.977 | 78% |
+| PageNet + `--refine` | real test | 287 | 100% | 0.58% / 7.4% | 0.967 | 78% |
+
+The learned detector always returns a quad, so there are no misses; compare IoU with the classical rows above, where a miss counts as 0. Refinement is reported to show why it is off by default. Reports: `reports/page-net-*.json`. To reproduce, build the CLI with `LIPI_WITH_NCNN=ON` and run `tools/predict_cli.py --model ../models/page-net/page-net` on each split.

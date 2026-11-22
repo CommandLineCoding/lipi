@@ -14,12 +14,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from lipi_eval.corpus import read_jsonl, write_jsonl  # noqa: E402
 
 
-def detect(cli, root, row):
-    proc = subprocess.run([cli, "detect", os.path.join(root, row["image"]), "--json"], capture_output=True, text=True)
+def detect(cli, root, row, model=None, refine=False):
+    cmd = [cli, "detect", os.path.join(root, row["image"]), "--json"] + (["--model", model] if model else []) + (["--refine"] if refine else [])
+    proc = subprocess.run(cmd, capture_output=True, text=True)
     pred = {"id": row["id"], "quad": None, "orientation": None, "ms": None}
     if proc.stdout.strip():
         out = json.loads(proc.stdout)
         pred["quad"], pred["ms"] = out["quad"], out["ms"]
+        pred["orientation"], pred["source"] = out.get("orientation"), out.get("source")
     elif proc.returncode not in (0, 3):
         print(f"{row['id']}: lipi-cli exited with {proc.returncode}: {proc.stderr.strip()}", file=sys.stderr)
     return pred
@@ -31,11 +33,13 @@ def main():
     ap.add_argument("--corpus", required=True, help="a split file such as data/real/test.jsonl")
     ap.add_argument("--out", required=True)
     ap.add_argument("--jobs", type=int, default=4)
+    ap.add_argument("--refine", action="store_true", help="nudge the model's corners onto page edges (off by default)")
+    ap.add_argument("--model", help="ncnn model prefix (PREFIX.ncnn.param and PREFIX.ncnn.bin); needs a CLI built with LIPI_WITH_NCNN=ON")
     args = ap.parse_args()
     root = os.path.dirname(os.path.abspath(args.corpus))
     rows = read_jsonl(args.corpus)
     with ThreadPoolExecutor(args.jobs) as pool:
-        preds = list(pool.map(lambda r: detect(args.cli, root, r), rows))
+        preds = list(pool.map(lambda r: detect(args.cli, root, r, args.model, args.refine), rows))
     write_jsonl(args.out, preds)
     print(f"wrote {len(preds)} predictions to {args.out}")
 

@@ -25,12 +25,13 @@ Options for `scan`:
 | `--brightness B`, `--contrast C` | Between -1 and 1, default 0. |
 | `--no-shadow-removal` | Keep the original lighting. |
 | `--no-rotate` | Do not turn the page upright using the detector's orientation. |
+| `--refine` | With `--model`, nudge the corners onto the nearest page edges (off by default). |
 | `--max-side N` | Cap the longer side of the result, default 2400. |
 | `--debug-dir DIR` | Save `01-input-quad.png` (the input with the outline drawn on it), `02-flattened.png` and `03-result.png`. |
 
 ## Learned detector
 
-Build with `-DLIPI_WITH_NCNN=ON` (see [CONTRIBUTING.md](../CONTRIBUTING.md)), then pass `--model PREFIX`, where `PREFIX.ncnn.param` and `PREFIX.ncnn.bin` are an exported model. The learned detector finds the corners and the page orientation; its corners are then refined on the full photo, and the classical detector is the fallback if it finds no page. Without `--model` the classical detector is used.
+Build with `-DLIPI_WITH_NCNN=ON` (see [CONTRIBUTING.md](../CONTRIBUTING.md)), then pass `--model PREFIX`, where `PREFIX.ncnn.param` and `PREFIX.ncnn.bin` are an exported model. The learned detector finds the corners and the page orientation, and the classical detector is the fallback if it finds no page. Without `--model` the classical detector is used. `--refine` nudges the model's corners onto the nearest page edges on the full photo; it is off by default because on real photos it did not beat the model's own corners.
 
 ## Exit codes
 
