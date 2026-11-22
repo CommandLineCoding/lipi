@@ -2,6 +2,23 @@
 <resources>
     <string name="app_name">Lipi</string>
     <string name="library_title">Library</string>
-    <string name="library_empty">No documents yet. Scan one to get started.</string>
-    <string name="core_version">Core %1$s</string>
+    <string name="library_search_placeholder">Search documents</string>
+    <string name="library_recent">Recent</string>
+    <string name="library_empty">No documents yet. Tap the scan button to add one.</string>
+    <string name="library_no_match">No document matches your search.</string>
+    <string name="settings_title">Settings</string>
+    <string name="camera_title">Camera</string>
+    <string name="scan">Scan a document</string>
+    <string name="delete">Delete</string>
+    <string name="date_today">Today</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="document_meta">%1$s · %2$s</string>
+    <plurals name="document_count">
+        <item quantity="one">%d document</item>
+        <item quantity="other">%d documents</item>
+    </plurals>
+    <plurals name="page_count">
+        <item quantity="one">%d page</item>
+        <item quantity="other">%d pages</item>
+    </plurals>
 </resources>
