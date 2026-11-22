@@ -38,3 +38,13 @@ object DarkPalette {
         Color(0xFF262033), Color(0xFF1B2A2F), Color(0xFF2E2323),
     )
 }
+
+/** The camera screens are dark in both themes, over the live picture. Values from the Camera frame of the design. */
+object CameraPalette {
+    val Background = Color(0xFF0B0D12)
+    val Control = Color(0x24FFFFFF) // white at 14%
+    val ModeInactive = Color(0xFF9AA0AE)
+    val Accent = Color(0xFF2DD4A0)
+    val OnAccent = Color(0xFF04261B)
+    val FlashOn = Color(0xFFFFD54A)
+}

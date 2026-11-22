@@ -1,0 +1,43 @@
+package `in`.commandlinecoding.lipi.scan
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
+
+class ScanSessionTest {
+    @get:Rule val tmp = TemporaryFolder()
+
+    @Test fun startsEmpty() = assertEquals(emptyList<Any>(), ScanSession(tmp.newFolder("s")).pages.value)
+
+    @Test fun newFilesAreUniqueAndInsideTheSessionFolder() {
+        val dir = tmp.newFolder("s")
+        val session = ScanSession(dir)
+        val a = session.newRawFile()
+        val b = session.newRawFile()
+        assertNotEquals(a, b)
+        assertEquals(dir, a.parentFile)
+    }
+
+    @Test fun addedPagesKeepTheirOrder() {
+        val session = ScanSession(tmp.newFolder("s"))
+        val files = (1..3).map { session.newRawFile().also { f -> f.writeText("x$it") } }
+        files.forEach(session::add)
+        assertEquals(files, session.pages.value)
+    }
+
+    @Test fun clearRemovesPagesAndFiles() {
+        val dir = tmp.newFolder("s")
+        val session = ScanSession(dir)
+        val f = session.newRawFile().also { it.writeText("x") }
+        val stray = java.io.File(dir, "left-over.jpg").also { it.writeText("y") }
+        session.add(f)
+        session.clear()
+        assertTrue(session.pages.value.isEmpty())
+        assertFalse(f.exists())
+        assertFalse(stray.exists())
+    }
+}
