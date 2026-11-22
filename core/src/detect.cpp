@@ -96,10 +96,10 @@ Edges canny(const lipi::Gray& g) {
     }
   // Thresholds from the gradient distribution.
   std::vector<float> sorted(mag);
-  const size_t k = static_cast<size_t>(0.90 * static_cast<double>(n));
+  const size_t k = static_cast<size_t>(0.85 * static_cast<double>(n));
   std::nth_element(sorted.begin(), sorted.begin() + static_cast<std::ptrdiff_t>(k), sorted.end());
-  const float high = std::max(12.0f, sorted[k]);
-  const float low = 0.4f * high;
+  const float high = std::max(8.0f, sorted[k]);
+  const float low = 0.35f * high;
 
   // Non-maximum suppression along the gradient direction.
   std::vector<uint8_t> nms(n, 0);
@@ -158,7 +158,7 @@ std::vector<Line> hough_lines(const Edges& e, int max_lines) {
       if (!e.on(x, y)) continue;
       double th = std::fmod(static_cast<double>(e.ang(x, y)) + 2 * kPi, kPi);
       const int t0 = static_cast<int>(std::lround(th * kThetaBins / kPi));
-      for (int dt = -1; dt <= 1; ++dt) {
+      for (int dt = -4; dt <= 4; ++dt) {
         const int t = ((t0 + dt) % kThetaBins + kThetaBins) % kThetaBins;
         const double rho = (x + 0.5) * cs[static_cast<size_t>(t)] + (y + 0.5) * sn[static_cast<size_t>(t)];
         const int r = static_cast<int>(std::lround(rho)) + rho_off;
@@ -184,7 +184,7 @@ std::vector<Line> hough_lines(const Edges& e, int max_lines) {
       }
       sm[static_cast<size_t>(t) * static_cast<size_t>(rho_bins) + static_cast<size_t>(r)] = sum / 4;
     }
-  const int min_votes = static_cast<int>(4 * 0.06 * std::min(e.w, e.h));
+  const int min_votes = static_cast<int>(4 * 0.04 * std::min(e.w, e.h));
   std::vector<Line> cands;
   for (int t = 0; t < kThetaBins; ++t)
     for (int r = 1; r < rho_bins - 1; ++r) {
@@ -297,7 +297,7 @@ struct Candidate {
 bool find_quad(const Edges& e, Candidate* best) {
   const std::vector<Line> lines = hough_lines(e, 24);
   const double img_area = static_cast<double>(e.w) * static_cast<double>(e.h);
-  const double perspective = 35 * kPi / 180, adjacent = 40 * kPi / 180;
+  const double perspective = 45 * kPi / 180, adjacent = 35 * kPi / 180;
   bool found = false;
   const size_t n = lines.size();
   for (size_t a = 0; a < n; ++a)
@@ -336,7 +336,7 @@ bool find_quad(const Edges& e, Candidate* best) {
               support += s / 4.0;
               min_side = std::min(min_side, s);
             }
-            if (!inside_ok || min_side < 0.3) continue;
+            if (!inside_ok || min_side < 0.2) continue;
             const double score = support * support * std::sqrt(std::min(1.0, polygon_area(q) / img_area));
             if (!found || score > best->score) {
               best->q = q;
