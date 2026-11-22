@@ -67,7 +67,7 @@ lipi/
 ├── metadata/                 # F-Droid / store listing metadata
 ├── core/                     # Portable C++ image pipeline (C ABI, no Android types)
 ├── cli/                      # Desktop CLI built on the core
-├── android/                  # Kotlin + Compose app
+├── android/                  # Kotlin + Compose app (Gradle project; see CONTRIBUTING.md)
 ├── tests/                    # Unit tests (doctest) and small test images
 ├── third_party/              # Vendored single-header libraries with their licenses
 ├── ml/                       # Training scripts and the evaluation harness

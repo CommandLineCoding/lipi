@@ -82,7 +82,15 @@ What the one phone shows so far, against the high tier: capture to finished page
 
 ---
 
-## 5. Distribution constraints
+## 5. The Android app
+
+Kotlin and Jetpack Compose with Material 3, themed from the design ([docs/DESIGN.md](DESIGN.md)). The portable core is built by the app's own CMake file and reached through a thin JNI layer (`android/app/src/main/cpp/lipi_jni.cpp`); the core has no Android types.
+
+**minSdk 26** (Android 8.0), decided for [#19](https://github.com/CommandLineCoding/lipi/issues/19): it keeps the app on the large majority of devices still in use and lets the adaptive icon and CameraX work without compatibility code, at the cost of handling storage through the system file picker instead of the simpler rules of newer versions. targetSdk and compileSdk are 36. The libraries are pinned to releases that compile against SDK 36, which is the highest version the Gradle plugin in use supports. The APK is built for `arm64-v8a` and, for the emulator, `x86_64`; native libraries are 16 KB page-aligned.
+
+---
+
+## 6. Distribution constraints
 
 These shape the design, so they are worth knowing before you add a dependency:
 
