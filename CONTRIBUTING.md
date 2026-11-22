@@ -17,7 +17,7 @@ Ways to help:
 - **Open questions:** issues labelled `decision` need an answer before work can start. Adding your view there is a valuable contribution.
 - **What's next for the project:** the [milestones](https://github.com/CommandLineCoding/lipi/milestones) group issues by release.
 
-Labels tell you where the work is (`area: core`, `area: android`, `area: ml`, `area: ocr`, `area: export`, `area: infra`, `area: design`), how soon it is needed (`P0` is the first release, `P1` comes next, `P2` is later) and how big it is (`good first issue`, `difficulty: medium`, `difficulty: hard`).
+Labels tell you where the work is (`area: core`, `area: android`, `area: ml`, `area: ocr`, `area: export`, `area: infra`, `area: design`), how soon it is needed (`P0` is the first release, `P1` comes next) and how big it is (`good first issue`, `difficulty: medium`, `difficulty: hard`).
 
 **Claiming an issue:** comment that you'd like to take it, and a maintainer will assign you. If there's no activity for two weeks, we may hand it to someone else. Just comment again if you're still on it. Please work on one issue at a time until your first PR is merged.
 

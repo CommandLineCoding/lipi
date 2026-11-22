@@ -15,7 +15,7 @@ The UI draft is in Figma: [FOSS Document Scanner – App Design](https://www.fig
 
 ## Features
 
-Features are grouped by priority. `P0` is the first release, and the same labels are on the issues.
+Features are grouped by priority. `P0` is the first release and `P1` comes after it; the same labels are on the issues.
 
 - **Live page detection (P0):** A small on-device model finds the four corners of the page in the camera preview, with the result smoothed across frames. Auto-capture takes the shot once the page is steady.
 - **Scanning essentials (P0):** Batch capture, manual corner adjustment with a magnifier, perspective correction, orientation and deskew, shadow removal, and the Auto, B&W, Gray and Color filters.
@@ -23,7 +23,6 @@ Features are grouped by priority. `P0` is the first release, and the same labels
 - **Private by design (P0):** No account, ads or trackers. The app asks for no network permission, and CI will check that.
 - **OCR (P1):** On-device text recognition with downloadable language packs for Bengali and Hindi, searchable PDF, and full-text search over the library.
 - **More tools (P1):** Scan modes (document, ID card, book, whiteboard, receipt), merge/split/reorder, annotation and signing, PII redaction, glare reduction, dewarping, layout and tables, MRC compression, PDF/A, an app lock, and WebDAV, Nextcloud and Paperless-ngx upload.
-- **Later (P2):** Handwriting, document classification, semantic search, an optional small language-model pack, encrypted and signed PDFs, a widget and tablet layouts.
 
 ## Principles
 
@@ -37,7 +36,7 @@ Features are grouped by priority. `P0` is the first release, and the same labels
 | Layer | Technology |
 |---|---|
 | App | Kotlin, Jetpack Compose (Material 3), CameraX |
-| Core | Portable C++ behind a C ABI, called through NDK/JNI (C++ vs Rust is open: [#1](https://github.com/CommandLineCoding/lipi/issues/1)) |
+| Core | Portable C++ behind a C ABI, called through NDK/JNI |
 | ML runtime | ONNX Runtime, or ncnn ([#16](https://github.com/CommandLineCoding/lipi/issues/16)) |
 | Storage | Room / SQLite with FTS5 |
 | Background work | WorkManager |
@@ -52,7 +51,6 @@ Features are grouped by priority. `P0` is the first release, and the same labels
 | [v0.1.0 — Android MVP](https://github.com/CommandLineCoding/lipi/milestones) | CameraX capture, live detection, crop, enhance, PDF export, library. Released on F-Droid and GitHub. |
 | [v0.2.0 — OCR & searchable PDF](https://github.com/CommandLineCoding/lipi/milestones) | On-device OCR, searchable PDF, language packs, full-text search. Google Play. |
 | [v0.3.0 — Layout, dewarp & redaction](https://github.com/CommandLineCoding/lipi/milestones) | Layout and tables, dewarping, redaction, compression. |
-| [Backlog](https://github.com/CommandLineCoding/lipi/milestones) | P2 ideas that are not scheduled yet. |
 
 ## Project Structure
 

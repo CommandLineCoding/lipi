@@ -14,7 +14,7 @@ Three concerns, kept separate. Compose screens follow the [Figma draft](https://
 
 **Native core — C++ behind a C ABI**
 
-The whole image pipeline lives here: corner detection, perspective correction, orientation and deskew, filters, and the PDF writer. The public surface is a C header with opaque handles and no Android types, so the same code runs in the desktop CLI, in the app through JNI, and later on iOS. Whether the core stays C++ or becomes Rust is still open ([#1](https://github.com/CommandLineCoding/lipi/issues/1)); the C ABI is the contract either way. See [CORE_API.md](CORE_API.md).
+The whole image pipeline lives here: corner detection, perspective correction, orientation and deskew, filters, and the PDF writer. The public surface is a C header with opaque handles and no Android types, so the same code runs in the desktop CLI, in the app through JNI, and later on iOS. See [CORE_API.md](CORE_API.md).
 
 **Models — ONNX Runtime**
 
