@@ -5,11 +5,11 @@
   ],
   "images": 97,
   "latency_ms": {
-    "deskew": 74.1,
-    "detect": 41.04,
-    "enhance": 157.87,
-    "total": 360.46,
-    "warp": 120.03
+    "deskew": 37.5,
+    "detect": 27.41,
+    "enhance": 91.62,
+    "total": 216.69,
+    "warp": 73.42
   },
   "pdf_kb_per_page": {
     "auto-q60": {
