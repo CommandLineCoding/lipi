@@ -1,0 +1,16 @@
+{
+  "build": "lipi-cli built with NDK 28.2, arm64-v8a, Release, ncnn 20261020 prebuilt for Android, learned detector",
+  "device": "Samsung SM-G781B (Snapdragon 865), Android 13",
+  "note": "Detection of one 640 x 480 preview frame, median and 95th percentile in milliseconds over 30 runs after a warm-up, default CPU scheduling. Two rounds taken alternately (round 1 / round 2) so both models saw the same conditions. 'full' is the PageNet architecture of page-net and page-net-v3 (687,145 parameters, 538 MFLOPs); 'small' is page-net-small (width 0.6, 255,608 parameters, 203 MFLOPs).",
+  "full": {
+    "threads_1": {"median_ms": [30.2, 30.3], "p95_ms": [32.7, 31.4]},
+    "threads_2": {"median_ms": [19.4, 20.7], "p95_ms": [20.5, 23.4]},
+    "threads_4": {"median_ms": [17.5, 18.7], "p95_ms": [18.9, 27.5]}
+  },
+  "small": {
+    "threads_1": {"median_ms": [16.5, 16.6], "p95_ms": [16.9, 18.1]},
+    "threads_2": {"median_ms": [12.9, 12.3], "p95_ms": [15.0, 14.1]},
+    "threads_4": {"median_ms": [15.1, 11.8], "p95_ms": [22.6, 14.5]}
+  },
+  "desktop_one_thread_x86_ms": {"full": 10.05, "small": 6.35}
+}

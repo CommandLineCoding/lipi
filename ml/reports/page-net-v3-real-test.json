@@ -1,0 +1,72 @@
+{
+  "all": {
+    "corner_error": {
+      "mean": 0.01558,
+      "median": 0.00427,
+      "p95": 0.06804
+    },
+    "failures": 0,
+    "images": 287,
+    "iou": {
+      "mean": 0.92403,
+      "median": 0.97555,
+      "p95": 0.99332
+    },
+    "iou_ge_90": 0.8118,
+    "iou_ge_95": 0.6969,
+    "latency_ms": {
+      "mean": 8.19967,
+      "median": 8.097,
+      "p95": 9.3287
+    },
+    "orientation_accuracy": null
+  },
+  "kinds": {
+    "real/photo": {
+      "corner_error": {
+        "mean": 0.01558,
+        "median": 0.00427,
+        "p95": 0.06804
+      },
+      "failures": 0,
+      "images": 287,
+      "iou": {
+        "mean": 0.92403,
+        "median": 0.97555,
+        "p95": 0.99332
+      },
+      "iou_ge_90": 0.8118,
+      "iou_ge_95": 0.6969,
+      "latency_ms": {
+        "mean": 8.19967,
+        "median": 8.097,
+        "p95": 9.3287
+      },
+      "orientation_accuracy": null
+    }
+  },
+  "sources": {
+    "real": {
+      "corner_error": {
+        "mean": 0.01558,
+        "median": 0.00427,
+        "p95": 0.06804
+      },
+      "failures": 0,
+      "images": 287,
+      "iou": {
+        "mean": 0.92403,
+        "median": 0.97555,
+        "p95": 0.99332
+      },
+      "iou_ge_90": 0.8118,
+      "iou_ge_95": 0.6969,
+      "latency_ms": {
+        "mean": 8.19967,
+        "median": 8.097,
+        "p95": 9.3287
+      },
+      "orientation_accuracy": null
+    }
+  }
+}
