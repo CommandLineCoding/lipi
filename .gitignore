@@ -1,0 +1,41 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+captures/
+.externalNativeBuild/
+.cxx/
+*.jks
+*.keystore
+google-services.json
+
+# Kotlin
+*.class
+.kotlin/
+
+# CMake / native
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+cmake_install.cmake
+compile_commands.json
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Python (training / eval scripts)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Models and datasets are tracked via checksums/manifests, not committed raw
+*.onnx.tmp
+/datasets/raw/
