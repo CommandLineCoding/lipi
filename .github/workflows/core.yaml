@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y ninja-build clang
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang qpdf poppler-utils mupdf-tools
       - name: Configure
         env:
           CC: ${{ matrix.compiler == 'clang' && 'clang' || 'gcc' }}
@@ -27,6 +27,8 @@ jobs:
       - name: Build
         run: cmake --build build
       - name: Test
+        env:
+          LIPI_REQUIRE_PDF_TOOLS: "1"
         run: ctest --test-dir build --output-on-failure
 
   sanitizers:
@@ -35,10 +37,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y ninja-build
+        run: sudo apt-get update && sudo apt-get install -y ninja-build qpdf poppler-utils mupdf-tools
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLIPI_SANITIZE=ON
       - name: Build
         run: cmake --build build
       - name: Test
+        env:
+          LIPI_REQUIRE_PDF_TOOLS: "1"
         run: ctest --test-dir build --output-on-failure
