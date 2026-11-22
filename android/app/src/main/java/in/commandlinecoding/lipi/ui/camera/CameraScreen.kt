@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -126,7 +127,7 @@ fun CameraScreen(session: ScanSession, onClose: () -> Unit, onReview: () -> Unit
         AlertDialog(
             onDismissRequest = { confirmDiscard = false },
             title = { Text(stringResource(R.string.camera_discard_title)) },
-            text = { Text(stringResource(R.string.camera_discard_message, pages.size)) },
+            text = { Text(pluralStringResource(R.plurals.camera_discard_message, pages.size, pages.size)) },
             confirmButton = {
                 TextButton(onClick = { confirmDiscard = false; session.clear(); onClose() }) { Text(stringResource(R.string.camera_discard)) }
             },
