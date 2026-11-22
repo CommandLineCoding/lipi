@@ -19,7 +19,7 @@ The contract between the portable C++ core and its callers (the desktop CLI, the
 |---|---|
 | Image buffer | Describe a pixel buffer (width, height, stride, format) |
 | Detector | `lipi_detect_page_classical` finds the page with edges, Hough lines and a quad search (`LIPI_ERR_NOT_FOUND` when no page is visible); model-based detection will sit beside it |
-| Quad | `lipi_refine_quad` snaps corners onto the page edges at sub-pixel accuracy; smoothing across frames will follow |
+| Quad | `lipi_refine_quad` snaps corners onto the page edges at sub-pixel accuracy; `lipi_smoother_*` smooths the quad across camera frames (One-Euro filter, resets when the page changes, bridges short dropouts, reports how long the page has been steady) |
 | Quad and warp | `lipi_quad_validate`, `lipi_estimate_page_size` (aspect recovered from perspective, with a phone-camera focal-length fallback) and `lipi_warp_quad` (bilinear) |
 | Enhance | Orientation, deskew, shadow removal, filters, brightness and contrast |
 | PDF writer | Build a multi-page PDF from page images (and, later, a text layer) |
