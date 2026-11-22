@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:   # a dry run: builds the package and keeps it as a workflow artifact, publishes nothing
+
+permissions:
+  contents: write
+
+env:
+  NCNN_TAG: "20261020"
+
+jobs:
+  cli:
+    name: Build the CLI with the learned detector
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Check the tag matches the version in CMakeLists.txt
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version=$(sed -n 's/^project(lipi VERSION \([0-9.]*\).*/\1/p' CMakeLists.txt)
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match version $version in CMakeLists.txt. Bump the version before tagging."
+            exit 1
+          fi
+
+      - name: Cache ncnn
+        id: ncnn-cache
+        uses: actions/cache@v4
+        with:
+          path: ncnn-install
+          key: ncnn-${{ env.NCNN_TAG }}-ubuntu-release
+
+      - name: Build ncnn
+        if: steps.ncnn-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch "$NCNN_TAG" https://github.com/Tencent/ncnn.git
+          cmake -S ncnn -B ncnn/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DNCNN_VULKAN=OFF -DNCNN_BUILD_TOOLS=OFF \
+            -DNCNN_BUILD_EXAMPLES=OFF -DNCNN_BUILD_BENCHMARK=OFF -DNCNN_BUILD_TESTS=OFF -DNCNN_OPENMP=OFF \
+            -DNCNN_SIMPLEOCV=ON -DCMAKE_INSTALL_PREFIX="$PWD/ncnn-install"
+          cmake --build ncnn/build
+          cmake --install ncnn/build
+
+      - name: Build and test Lipi
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLIPI_WITH_NCNN=ON -DCMAKE_PREFIX_PATH="$PWD/ncnn-install"
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+
+      - name: Check the model files
+        run: cd models/page-net && sha256sum -c SHA256SUMS
+
+      - name: Check the packaged CLI works with the model
+        run: |
+          ./build/cli/lipi-cli --version
+          ./build/cli/lipi-cli scan tests/data/page.png -o "$RUNNER_TEMP/check.png" --model models/page-net/page-net
+
+      - name: Package
+        run: |
+          name="lipi-cli-${GITHUB_REF_NAME//\//-}-linux-x86_64"
+          mkdir -p "dist/$name/models/page-net"
+          cp build/cli/lipi-cli "dist/$name/"
+          cp models/page-net/page-net.ncnn.param models/page-net/page-net.ncnn.bin models/page-net/MODEL_CARD.md models/page-net/SHA256SUMS "dist/$name/models/page-net/"
+          cp LICENSE cli/README.md "dist/$name/"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+          (cd dist && sha256sum "$name.tar.gz" > "$name.tar.gz.sha256")
+          ls -la dist
+
+      - name: Keep the package (dry run)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lipi-cli-dry-run
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: |
+            dist/*.tar.gz
+            dist/*.sha256
