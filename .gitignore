@@ -18,7 +18,7 @@ google-services.json
 .kotlin/
 
 # CMake / native
-/build/
+/build*/
 CMakeCache.txt
 CMakeFiles/
 cmake-build-*/
