@@ -65,3 +65,34 @@ Corner error is a fraction of the image diagonal. IoU counts a missed page as 0,
 | PageNet + `--refine` | real test | 287 | 100% | 0.58% / 7.4% | 0.967 | 78% |
 
 The learned detector always returns a quad, so there are no misses; compare IoU with the classical rows above, where a miss counts as 0. Refinement is reported to show why it is off by default. Reports: `reports/page-net-*.json`. To reproduce, build the CLI with `LIPI_WITH_NCNN=ON` and run `tools/predict_cli.py --model ../models/page-net/page-net` on each split.
+
+### Orientation by document type
+
+The orientation head's accuracy on the 2000 synthetic test images, from `reports/page-net-synth-test.json` (the `kinds` section):
+
+| Document type | Images | Orientation correct | IoU (mean) |
+|---|---|---|---|
+| Document | 827 | 99.8% | 0.991 |
+| ID card | 289 | 100% | 0.984 |
+| Notes | 261 | 100% | 0.991 |
+| Receipt | 418 | 97.6% | 0.985 |
+| Whiteboard | 205 | 92.2% | 0.984 |
+
+Real photos are not labelled for orientation, so this is only measured on synthetic pages.
+
+### PDF size and latency
+
+From `tools/bench_pdf.py` on the 97 real validation photos at 2000 x 1500, with the learned detector, one thread of an x86 desktop CPU ([report](reports/pdf-size-and-latency.json)).
+
+| Setting | KB per page, mean (median) |
+|---|---|
+| Auto filter, JPEG quality 60 | 105 (96) |
+| Auto filter, JPEG quality 80 | 159 (145) |
+| Auto filter, JPEG quality 90 | 234 (212) |
+| Colour, quality 80 | 161 (151) |
+| Gray, quality 80 | 151 (142) |
+| B&W, quality 80 | 175 (150) |
+
+B&W pages are not smaller because they are still stored as JPEG; real bi-level and MRC compression is planned ([#66](https://github.com/CommandLineCoding/lipi/issues/66)).
+
+Time per stage for one 2000 x 1500 photo (median of the per-image medians over 20 runs): detection 41 ms (most of it resizing the photo down to the model's 256 x 256 input; the network itself takes about 9 ms), flattening 120 ms, clean-up 158 ms, straightening 74 ms, 360 ms in all. Live preview only runs detection, on a smaller frame.

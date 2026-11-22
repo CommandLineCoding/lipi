@@ -66,7 +66,23 @@ Every change to the pipeline or a model is measured by the harness in `ml/`, wit
 
 ---
 
-## 4. Distribution constraints
+## 4. Performance
+
+The pipeline is measured with `lipi-cli bench` (per-stage latency) and `ml/tools/bench_pdf.py` (PDF size), see [ml/README.md](../ml/README.md). So far only a desktop CPU has been measured: one thread, a 2000 x 1500 photo, detection 41 ms, 360 ms for the whole scan. Phone numbers are still to be taken ([#9](https://github.com/CommandLineCoding/lipi/issues/9)).
+
+Device tiers used for targets, which are goals and not yet measurements:
+
+| Tier | Example hardware | Live preview detection | Capture to finished page (12 MP photo) |
+|---|---|---|---|
+| Low | 2019 budget phone, Cortex-A53/A55 cores, 3 GB RAM | at most 33 ms per frame (30 fps) | at most 3 s |
+| Mid | Snapdragon 6 or 7 series, 4 to 6 GB RAM | at most 15 ms | at most 1.5 s |
+| High | Snapdragon 8 series or equivalent, 8 GB RAM or more | at most 10 ms | at most 0.8 s |
+
+The first Android build will run `lipi-cli bench`-style timing inside the app on real devices and fill this table in.
+
+---
+
+## 5. Distribution constraints
 
 These shape the design, so they are worth knowing before you add a dependency:
 

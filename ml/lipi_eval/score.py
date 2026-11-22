@@ -5,7 +5,8 @@
 Predictions are JSON lines: {"id": ..., "quad": [[x, y] * 4] or null,
 "orientation": 0-3 or null, "ms": float or null}. A missing or null quad counts
 as a failure with IoU 0. The report is JSON with sorted keys and rounded
-numbers so that CI can diff it.
+numbers so that CI can diff it. When the corpus rows carry a "kind" (document, receipt, id_card,
+notes, whiteboard) the report also has a "kinds" section with the same numbers per kind.
 """
 import argparse
 import json
@@ -45,7 +46,25 @@ def score(corpus, preds):
             g["ms"].append(float(p["ms"]))
         if p.get("orientation") is not None and row["orientation"] is not None:
             g["orient"].append(1.0 if p["orientation"] == row["orientation"] else 0.0)
+    kinds = {}
+    for row in corpus:
+        if row.get("kind"):
+            p = by_id.get(row["id"])
+            g = kinds.setdefault(f"{row['source']}/{row['kind']}", {"err": [], "iou": [], "ms": [], "orient": [], "n": 0, "fail": 0})
+            g["n"] += 1
+            if p is None or p.get("quad") is None:
+                g["fail"] += 1
+                g["iou"].append(0.0)
+                continue
+            g["err"].append(corner_error(p["quad"], row["quad"], row["width"], row["height"]))
+            g["iou"].append(quad_iou(p["quad"], row["quad"]))
+            if p.get("ms") is not None:
+                g["ms"].append(float(p["ms"]))
+            if p.get("orientation") is not None and row["orientation"] is not None:
+                g["orient"].append(1.0 if p["orientation"] == row["orientation"] else 0.0)
     report = {"sources": {}, "all": None}
+    if kinds:
+        report["kinds"] = {name: _summary(kinds[name]) for name in sorted(kinds)}
     total = {"err": [], "iou": [], "ms": [], "orient": [], "n": 0, "fail": 0}
     for name in sorted(groups):
         g = groups[name]

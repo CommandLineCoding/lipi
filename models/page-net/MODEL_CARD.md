@@ -44,6 +44,8 @@ Held-out test images, never used for training or for choosing the checkpoint. Co
 | Real test | 287 | 0.42% / 7.5% | 0.977 / 0.916 | 78% | not labelled |
 | Real validation | 100 | 0.51% / 8.9% | 0.968 / 0.908 | 75% | not labelled |
 
+Orientation accuracy by document type on the synthetic test set: documents 99.8%, ID cards 100%, notes 100%, receipts 97.6%, whiteboards 92.2% (little text to read the direction from). Real photos are not labelled for orientation, so there is no real-world figure.
+
 For comparison, the classical detector scores a median IoU of 0.898 on the same real test photos and finds a page in 83% of them ([reports](../../ml/reports/)). The model always returns a quad.
 
 The ncnn model gives the same numbers as the ONNX one, so the 16-bit weights and the conversion lose nothing measurable. Nudging the corners onto page edges afterwards (`lipi-cli --refine`) made the real results slightly worse (median corner error 0.58%), so it is off by default.

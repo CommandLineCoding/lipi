@@ -102,6 +102,21 @@ bool save_image(const std::string& path, const lipi_image_view& v, std::string* 
   return ok != 0;
 }
 
+namespace {
+void append_bytes(void* context, void* data, int size) {
+  auto* out = static_cast<std::vector<uint8_t>*>(context);
+  const auto* p = static_cast<const uint8_t*>(data);
+  out->insert(out->end(), p, p + size);
+}
+}  // namespace
+
+bool encode_jpeg(const lipi_image_view& v, int quality, std::vector<uint8_t>* out) {
+  const int channels = lipi_pixel_format_channels(v.format);
+  if (channels == 0 || v.stride != v.width * channels) return false;
+  out->clear();
+  return stbi_write_jpg_to_func(append_bytes, out, v.width, v.height, channels, v.data, quality) != 0;
+}
+
 void draw_quad(Pixels* img, const lipi_quad& q) {
   const int t = std::max(1, std::max(img->width, img->height) / 600);
   for (int i = 0; i < 4; ++i) {

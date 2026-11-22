@@ -14,6 +14,8 @@ cmake -S . -B build -G Ninja && cmake --build build
 |---|---|
 | `detect <image> [--model PREFIX] [--json]` | Finds the page outline and prints its four corners (top-left, top-right, bottom-right, bottom-left, in pixels), a confidence and the time taken. `--json` prints one JSON line (with the page orientation and which detector found it), which `ml/tools/predict_cli.py` reads. |
 | `scan <image> -o <output>` | Finds the page, estimates its real aspect ratio, flattens it, cleans it up and saves it upright (`.png`, `.jpg` or `.bmp`). |
+| `pdf <image>... -o <output.pdf>` | Scans each image and writes the pages to one PDF. Pages are JPEG (`--quality 1-100`, default 80) and sized from `--dpi` (default 150). Takes the same page options as `scan`. |
+| `bench <image> [--repeat N] [--json]` | Times each stage (detect, warp, enhance, deskew) over N runs after a warm-up and prints the median and 95th percentile, on this machine. |
 | `--version`, `--help` | |
 
 Options for `scan`:
@@ -24,6 +26,7 @@ Options for `scan`:
 | `--filter auto\|bw\|gray\|color\|none` | The look of the result, default `auto` (gray for a page with no colour content, else colour). |
 | `--brightness B`, `--contrast C` | Between -1 and 1, default 0. |
 | `--no-shadow-removal` | Keep the original lighting. |
+| `--no-deskew` | Do not straighten tilted text lines. By default the page is straightened when the tilt is at least 0.3 degrees and the estimate is confident. |
 | `--no-rotate` | Do not turn the page upright using the detector's orientation. |
 | `--refine` | With `--model`, nudge the corners onto the nearest page edges (off by default). |
 | `--max-side N` | Cap the longer side of the result, default 2400. |

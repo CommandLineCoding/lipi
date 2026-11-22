@@ -1,4 +1,5 @@
 add_library(lipi_core
+  src/deskew.cpp
   src/detect.cpp
   src/detector.cpp
   src/enhance.cpp

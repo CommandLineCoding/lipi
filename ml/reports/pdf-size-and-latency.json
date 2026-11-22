@@ -1,0 +1,46 @@
+{
+  "image_size": [
+    1125,
+    2000
+  ],
+  "images": 97,
+  "latency_ms": {
+    "deskew": 74.1,
+    "detect": 41.04,
+    "enhance": 157.87,
+    "total": 360.46,
+    "warp": 120.03
+  },
+  "pdf_kb_per_page": {
+    "auto-q60": {
+      "mean": 105.2,
+      "median": 96.0,
+      "pages": 97
+    },
+    "auto-q80": {
+      "mean": 158.9,
+      "median": 145.3,
+      "pages": 97
+    },
+    "auto-q90": {
+      "mean": 234.4,
+      "median": 211.6,
+      "pages": 97
+    },
+    "bw-q80": {
+      "mean": 175.2,
+      "median": 150.1,
+      "pages": 97
+    },
+    "color-q80": {
+      "mean": 161.0,
+      "median": 150.7,
+      "pages": 97
+    },
+    "gray-q80": {
+      "mean": 150.7,
+      "median": 141.6,
+      "pages": 97
+    }
+  }
+}
