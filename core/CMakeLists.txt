@@ -1,11 +1,14 @@
 add_library(lipi_core
+  src/detect.cpp
   src/detector.cpp
+  src/enhance.cpp
   src/geometry.cpp
   src/gray.cpp
   src/image.cpp
-  src/detect.cpp
+  src/pdf.cpp
   src/quad.cpp
   src/resize.cpp
+  src/smooth.cpp
   src/status.cpp
   src/version.cpp
   src/warp.cpp

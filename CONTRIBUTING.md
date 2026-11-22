@@ -41,6 +41,7 @@ cd lipi
 cmake -S . -B build -G Ninja
 cmake --build build
 ctest --test-dir build --output-on-failure
+./build/cli/lipi-cli scan photo.jpg -o page.png   # try it on a photo
 ```
 
 To include the learned detector, build ncnn once and point CMake at it:
@@ -53,6 +54,8 @@ cmake -S ncnn -B ncnn/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DNCNN_VULKAN=OF
 cmake --build ncnn/build && cmake --install ncnn/build
 cmake -S . -B build -G Ninja -DLIPI_WITH_NCNN=ON -DCMAKE_PREFIX_PATH=$PWD/ncnn-install
 ```
+
+See [cli/README.md](cli/README.md) for the commands and exit codes.
 
 Add `-DLIPI_SANITIZE=ON` (and `-DCMAKE_BUILD_TYPE=Debug`) to build with AddressSanitizer and UndefinedBehaviorSanitizer, as CI does. The core has no third-party dependencies; single-header libraries used by the CLI and tests live in `third_party/` with their licenses.
 
@@ -72,8 +75,8 @@ You need the Android NDK for the native core. The versions we build with will be
 | Path | What's there |
 |---|---|
 | `core/` | The C++ image pipeline and its C ABI. A good place to start reading |
-| `tests/` | Unit tests for the core |
 | `cli/` | The desktop command-line tool built on the core |
+| `tests/` | Unit tests for the core and the CLI |
 | `android/` | The Kotlin + Compose app: screens, CameraX capture, Room database |
 | `ml/` | Training scripts and the evaluation harness |
 | `models/` | Model cards, dataset cards and checksums |

@@ -68,7 +68,7 @@ lipi/
 ├── core/                     # Portable C++ image pipeline (C ABI, no Android types)
 ├── cli/                      # Desktop CLI built on the core
 ├── android/                  # Kotlin + Compose app
-├── tests/                    # Unit tests (doctest)
+├── tests/                    # Unit tests (doctest) and small test images
 ├── third_party/              # Vendored single-header libraries with their licenses
 ├── ml/                       # Training scripts and the evaluation harness
 ├── models/                   # Model cards, dataset cards and checksums
