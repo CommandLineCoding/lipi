@@ -21,7 +21,7 @@ The contract between the portable C++ core and its callers (the desktop CLI, the
 | Detector | `lipi_detect_page_classical` finds the page with edges, Hough lines and a quad search (`LIPI_ERR_NOT_FOUND` when no page is visible); model-based detection will sit beside it |
 | Quad | `lipi_refine_quad` snaps corners onto the page edges at sub-pixel accuracy; smoothing across frames will follow |
 | Quad and warp | `lipi_quad_validate`, `lipi_estimate_page_size` (aspect recovered from perspective, with a phone-camera focal-length fallback) and `lipi_warp_quad` (bilinear) |
-| Enhance | Orientation, deskew, shadow removal, filters, brightness and contrast |
+| Enhance | `lipi_enhance` with `lipi_enhance_options`: shadow removal (the lighting is estimated at low resolution and divided out), the Auto, B&W, Gray and Color filters, and brightness and contrast. B&W uses a local adaptive threshold. Orientation and deskew come separately |
 | PDF writer | `lipi_pdf_create`, `lipi_pdf_add_page_jpeg` (embeds the JPEG as it is), `lipi_pdf_add_page_image` (raw pixels) and `lipi_pdf_finish`, streaming to a write callback. Output has no timestamps, so identical input gives identical bytes. A text layer and compression come later |
 
 ## Conventions

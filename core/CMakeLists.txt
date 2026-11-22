@@ -1,4 +1,5 @@
 add_library(lipi_core
+  src/enhance.cpp
   src/geometry.cpp
   src/gray.cpp
   src/image.cpp
