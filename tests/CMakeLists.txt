@@ -1,6 +1,7 @@
 add_executable(lipi_tests
   main.cpp
   test_detect.cpp
+  test_enhance.cpp
   test_image.cpp
   test_pdf.cpp
   test_warp.cpp

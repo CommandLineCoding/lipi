@@ -153,6 +153,30 @@ LIPI_API lipi_status lipi_pdf_finish(lipi_pdf* pdf);
 /* Frees the writer. Passing NULL is allowed. */
 LIPI_API void lipi_pdf_free(lipi_pdf* pdf);
 
+typedef enum lipi_filter {
+  LIPI_FILTER_NONE = 0,  /* leave colours alone; only shadow removal and adjustments apply */
+  LIPI_FILTER_AUTO = 1,  /* clean document look: gray if the page has no colour content, else colour */
+  LIPI_FILTER_BW = 2,    /* pure black and white (gray output with values 0 and 255) */
+  LIPI_FILTER_GRAY = 3,  /* grayscale */
+  LIPI_FILTER_COLOR = 4  /* colour with an even white background */
+} lipi_filter;
+
+typedef struct lipi_enhance_options {
+  int filter;          /* a lipi_filter value; anything else is rejected */
+  int remove_shadows;  /* non-zero: even out uneven lighting and shadows first */
+  float brightness;    /* -1 (darker) to 1 (brighter); 0 leaves it unchanged */
+  float contrast;      /* -1 (flatter) to 1 (stronger); 0 leaves it unchanged */
+} lipi_enhance_options;
+
+/* Auto filter with shadow removal and no brightness or contrast change. */
+LIPI_API lipi_enhance_options lipi_enhance_defaults(void);
+
+/* Cleans up a flattened page. Gray and BW produce a gray image; the other
+ * filters keep the source's colour, except Auto, which returns gray when the
+ * page has no colour content. Check the format of the result. */
+LIPI_API lipi_status lipi_enhance(const lipi_image_view* src, const lipi_enhance_options* options,
+                                  lipi_image** out);
+
 #ifdef __cplusplus
 }
 #endif
