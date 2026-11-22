@@ -29,6 +29,7 @@ Options for `scan`:
 | `--no-deskew` | Do not straighten tilted text lines. By default the page is straightened when the tilt is at least 0.3 degrees and the estimate is confident. |
 | `--no-rotate` | Do not turn the page upright using the detector's orientation. |
 | `--refine` | With `--model`, nudge the corners onto the nearest page edges (off by default). |
+| `--threads N` | Threads for the learned detector, default 1. |
 | `--max-side N` | Cap the longer side of the result, default 2400. |
 | `--debug-dir DIR` | Save `01-input-quad.png` (the input with the outline drawn on it), `02-flattened.png` and `03-result.png`. |
 
@@ -45,3 +46,16 @@ Build with `-DLIPI_WITH_NCNN=ON` (see [CONTRIBUTING.md](../CONTRIBUTING.md)), th
 | 2 | A file could not be read, decoded or written |
 | 3 | No page found |
 | 4 | Internal error |
+
+## Cross-compiling for Android
+
+The CLI runs on a phone over `adb`, which is how the on-device numbers were taken. With the Android NDK and the prebuilt ncnn package for Android (the release zip of the version in `CONTRIBUTING.md`):
+
+```bash
+cmake -S . -B build-android -G Ninja -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-26 -DANDROID_STL=c++_static -DCMAKE_BUILD_TYPE=Release \
+  -DLIPI_WITH_NCNN=ON -Dncnn_DIR=/path/to/ncnn-android/arm64-v8a/lib/cmake/ncnn -DLIPI_BUILD_TESTS=OFF
+cmake --build build-android
+adb push build-android/cli/lipi-cli models/page-net/page-net.ncnn.* photo.jpg /data/local/tmp/
+adb shell 'cd /data/local/tmp && chmod +x lipi-cli && ./lipi-cli bench photo.jpg --model page-net --threads 4'
+```

@@ -68,7 +68,7 @@ Every change to the pipeline or a model is measured by the harness in `ml/`, wit
 
 ## 4. Performance
 
-The pipeline is measured with `lipi-cli bench` (per-stage latency) and `ml/tools/bench_pdf.py` (PDF size), see [ml/README.md](../ml/README.md). So far only a desktop CPU has been measured: one thread, a 2000 x 1500 photo, detection 27 ms, 217 ms for the whole scan. Phone numbers are still to be taken ([#9](https://github.com/CommandLineCoding/lipi/issues/9)).
+The pipeline is measured with `lipi-cli bench` (per-stage latency) and `ml/tools/bench_pdf.py` (PDF size), see [ml/README.md](../ml/README.md). On a desktop CPU, one thread, a 2000 x 1500 photo takes 27 ms to detect and 217 ms to scan. On one phone, a Samsung SM-G781B (Snapdragon 865, a high-end device) running the same CLI built with the Android NDK, a 640 x 480 preview frame takes 30.6 ms to detect on one thread, 20.2 ms on two and 15.0 ms on four, and a 12 megapixel photo takes 0.49 s to scan on one thread ([report](../ml/reports/on-device-sm-g781b.json)).
 
 Device tiers used for targets, which are goals and not yet measurements:
 
@@ -78,7 +78,7 @@ Device tiers used for targets, which are goals and not yet measurements:
 | Mid | Snapdragon 6 or 7 series, 4 to 6 GB RAM | at most 15 ms | at most 1.5 s |
 | High | Snapdragon 8 series or equivalent, 8 GB RAM or more | at most 10 ms | at most 0.8 s |
 
-The first Android build will run `lipi-cli bench`-style timing inside the app on real devices and fill this table in.
+What the one phone shows so far, against the high tier: capture to finished page is within its target (0.49 s against 0.8 s), but preview detection is not (15 ms with four threads, 30.6 ms with one, against 10 ms). It does clear 30 frames per second (33 ms) on a single thread, and running detection every other frame with the quad smoother filling the gaps is an option. Getting to 10 ms would take a smaller network. Low and mid tier devices have not been measured; the first Android build will run this timing inside the app on more devices and fill the table in.
 
 ---
 
