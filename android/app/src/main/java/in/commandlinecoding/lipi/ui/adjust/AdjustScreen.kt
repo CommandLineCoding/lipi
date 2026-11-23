@@ -78,8 +78,10 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
     val page = pages.getOrNull(index)
     val scope = rememberCoroutineScope()
 
+    // Set before a button removes the last page, so that the check below does not also leave a second time.
+    var leaving by remember { mutableStateOf(false) }
     // Nothing to adjust (for example the pages were discarded): leave.
-    LaunchedEffect(page == null) { if (page == null) onBack() }
+    LaunchedEffect(page == null) { if (page == null && !leaving) onBack() }
     if (page == null) return
 
     var bitmap by remember(page) { mutableStateOf<Bitmap?>(null) }
@@ -145,7 +147,7 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
                 label = stringResource(R.string.adjust_retake),
                 background = CameraPalette.Control,
                 modifier = Modifier.width(104.dp),
-                onClick = { session.remove(page); onRetake() },
+                onClick = { leaving = true; session.remove(page); onRetake() },
             )
             ActionButton(
                 label = stringResource(R.string.adjust_next),
@@ -155,7 +157,7 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
                 enabled = bitmap != null && !searching,
                 onClick = {
                     session.setQuad(page, quad)
-                    if (index + 1 < pages.size) index += 1 else onDone()
+                    if (index + 1 < pages.size) index += 1 else { leaving = true; onDone() }
                 },
             )
         }
