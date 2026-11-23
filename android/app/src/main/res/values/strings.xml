@@ -30,7 +30,16 @@
     <string name="camera_permission_allow">Allow camera</string>
     <string name="camera_permission_settings">Open app settings</string>
     <string name="camera_permission_pick">Choose photos instead</string>
-    <string name="adjust_title">Adjust</string>
+    <string name="adjust_title">Adjust corners</string>
+    <string name="adjust_auto">Auto</string>
+    <string name="adjust_hint">Drag the corners to fit the page</string>
+    <string name="adjust_not_found">No page found. Drag the corners into place.</string>
+    <string name="adjust_page_of">Page %1$d of %2$d</string>
+    <string name="adjust_retake">Retake</string>
+    <string name="adjust_next">Next</string>
+    <string name="adjust_loading">Looking for the page</string>
+    <string name="back">Back</string>
+    <string name="enhance_title">Enhance</string>
     <string name="scan">Scan a document</string>
     <string name="delete">Delete</string>
     <string name="date_today">Today</string>
