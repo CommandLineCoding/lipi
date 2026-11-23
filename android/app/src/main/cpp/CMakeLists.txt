@@ -6,6 +6,12 @@ set(LIPI_BUILD_CLI OFF CACHE BOOL "" FORCE)
 set(LIPI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 get_filename_component(LIPI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../.." ABSOLUTE)
 
+# Native code is optimised in debug builds too. Unoptimised ncnn is about twice as slow, which makes the camera preview
+# stutter and the timings in the log meaningless. Symbols are still kept (and stripped from the APK).
+# (The NDK toolchain sets these as plain variables, so they are appended to here and not set as cache entries.)
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O2")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O2")
+
 # Use ccache when it is installed. It only saves compile time (ncnn is large) and does not change the output.
 find_program(LIPI_CCACHE ccache)
 if(LIPI_CCACHE)
