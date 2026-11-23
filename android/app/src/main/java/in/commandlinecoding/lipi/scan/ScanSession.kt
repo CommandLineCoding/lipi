@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The pages captured or imported for the document being scanned, before they are cropped, cleaned up and saved.
@@ -18,6 +19,21 @@ class ScanSession(private val dir: File) {
     private val _pages = MutableStateFlow<List<File>>(emptyList())
     val pages: StateFlow<List<File>> = _pages.asStateFlow()
     private var counter = 0
+    private val quads = ConcurrentHashMap<File, PageQuad>()
+
+    /** The page outline the user confirmed for [file], if any. */
+    fun quadOf(file: File): PageQuad? = quads[file]
+
+    fun setQuad(file: File, quad: PageQuad) {
+        quads[file] = quad
+    }
+
+    /** Drops one page and its image, for example when the user retakes it. */
+    fun remove(file: File) {
+        quads.remove(file)
+        _pages.update { it - file }
+        file.delete()
+    }
 
     /** A new, empty file for the next raw page image. */
     @Synchronized
@@ -49,6 +65,7 @@ class ScanSession(private val dir: File) {
     fun clear() {
         _pages.value.forEach { it.delete() }
         _pages.value = emptyList()
+        quads.clear()
         dir.listFiles()?.forEach { it.delete() }
     }
 }

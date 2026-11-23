@@ -47,4 +47,5 @@ object CameraPalette {
     val Accent = Color(0xFF2DD4A0)
     val OnAccent = Color(0xFF04261B)
     val FlashOn = Color(0xFFFFD54A)
+    val Indigo = Color(0xFF3D5AFE) // handles, outline and the main button over the dark picture
 }

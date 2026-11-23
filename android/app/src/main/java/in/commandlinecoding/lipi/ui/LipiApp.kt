@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import `in`.commandlinecoding.lipi.LipiApplication
 import `in`.commandlinecoding.lipi.R
 import `in`.commandlinecoding.lipi.ui.components.HomeBottomBar
+import `in`.commandlinecoding.lipi.ui.adjust.AdjustScreen
 import `in`.commandlinecoding.lipi.ui.camera.CameraScreen
 import `in`.commandlinecoding.lipi.ui.components.HomeTab
 import `in`.commandlinecoding.lipi.ui.library.LibraryScreen
@@ -39,6 +40,7 @@ object Routes {
     const val Settings = "settings"
     const val Camera = "camera"
     const val Adjust = "adjust"
+    const val Enhance = "enhance"
 }
 
 /** Root of the app: the navigation graph. Screens that are not built yet show a placeholder. */
@@ -71,7 +73,15 @@ fun LipiApp() {
                     onReview = { nav.navigate(Routes.Adjust) { launchSingleTop = true } },
                 )
             }
-            composable(Routes.Adjust) { Placeholder(stringResource(R.string.adjust_title)) }
+            composable(Routes.Adjust) {
+                AdjustScreen(
+                    session = app.session,
+                    onBack = { nav.popBackStack() },
+                    onRetake = { nav.popBackStack() },
+                    onDone = { nav.navigate(Routes.Enhance) { launchSingleTop = true } },
+                )
+            }
+            composable(Routes.Enhance) { Placeholder(stringResource(R.string.enhance_title)) }
         }
     }
 }

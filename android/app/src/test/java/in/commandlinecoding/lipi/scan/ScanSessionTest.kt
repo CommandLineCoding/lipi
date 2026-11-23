@@ -40,4 +40,29 @@ class ScanSessionTest {
         assertFalse(f.exists())
         assertFalse(stray.exists())
     }
+
+    @Test fun outlineIsKeptPerPageAndDroppedWithIt() {
+        val session = ScanSession(tmp.newFolder("s"))
+        val a = session.newRawFile().also { it.writeText("a") }
+        val b = session.newRawFile().also { it.writeText("b") }
+        session.add(a)
+        session.add(b)
+        val quad = PageQuad.inset(0.1f)
+        session.setQuad(a, quad)
+        assertEquals(quad, session.quadOf(a))
+        assertEquals(null, session.quadOf(b))
+        session.remove(a)
+        assertEquals(listOf(b), session.pages.value)
+        assertFalse(a.exists())
+        assertEquals(null, session.quadOf(a))
+    }
+
+    @Test fun clearForgetsOutlines() {
+        val session = ScanSession(tmp.newFolder("s"))
+        val f = session.newRawFile().also { it.writeText("x") }
+        session.add(f)
+        session.setQuad(f, PageQuad.inset())
+        session.clear()
+        assertEquals(null, session.quadOf(f))
+    }
 }
