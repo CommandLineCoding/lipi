@@ -5,6 +5,18 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// The page detector's model is bundled with the app. It is copied from models/ so that there is one copy in the repository.
+// Only PageNet (trained without the CC BY-SA ID-card frames) is bundled; see models/page-net-small/MODEL_CARD.md.
+val bundledModels = layout.buildDirectory.dir("generated/models")
+val copyModels = tasks.register<Copy>("copyModels") {
+    from(rootProject.file("../models/page-net")) {
+        include("page-net.ncnn.param", "page-net.ncnn.bin")
+        into("models")
+    }
+    into(bundledModels)
+}
+tasks.named("preBuild") { dependsOn(copyModels) }
+
 android {
     namespace = "in.commandlinecoding.lipi"
     compileSdk = 36
@@ -58,6 +70,10 @@ android {
             // Native libraries are stored uncompressed and page-aligned (16 KB), which Android 15+ requires.
             useLegacyPackaging = false
         }
+    }
+
+    sourceSets {
+        getByName("main") { assets.srcDir(bundledModels) }
     }
 
     // Reproducible builds: no timestamps or VCS info in the output.

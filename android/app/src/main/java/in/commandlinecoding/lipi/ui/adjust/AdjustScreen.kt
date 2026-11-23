@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -53,6 +55,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import `in`.commandlinecoding.lipi.NativeCore
 import `in`.commandlinecoding.lipi.R
+import `in`.commandlinecoding.lipi.scan.LazyDetector
+import `in`.commandlinecoding.lipi.scan.LiveDetector
 import `in`.commandlinecoding.lipi.scan.PageQuad
 import `in`.commandlinecoding.lipi.scan.ScanSession
 import `in`.commandlinecoding.lipi.scan.differsFrom
@@ -77,6 +81,9 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
     var index by rememberSaveable { mutableIntStateOf(0) }
     val page = pages.getOrNull(index)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val detector = remember { LazyDetector(context) }
+    DisposableEffect(detector) { onDispose { detector.close() } }
 
     // Set before a button removes the last page, so that the check below does not also leave a second time.
     var leaving by remember { mutableStateOf(false) }
@@ -91,10 +98,13 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
     var notFound by remember(page) { mutableStateOf(false) }
 
     // Finds the page in the working-size image. The same call serves the first look and the Auto button.
+    // The learned detector goes first; when it is not sure, or the build has none, the classical one gets a try.
     suspend fun runAuto(source: Bitmap) {
         searching = true
         val found = withContext(Dispatchers.Default) {
-            NativeCore.detectPageClassical(source)?.let { PageQuad.fromPixels(it, source.width, source.height) }
+            val learned = detector.get()?.detect(source)?.takeIf { it.confidence >= LiveDetector.MIN_CONFIDENCE }
+                ?.let { PageQuad.fromPixels(it.corners, source.width, source.height) }
+            learned ?: NativeCore.detectPageClassical(source)?.let { PageQuad.fromPixels(it, source.width, source.height) }
         }
         notFound = found == null
         if (found != null) { quad = found; detected = found } else { quad = PageQuad.inset(); detected = null }

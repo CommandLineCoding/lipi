@@ -16,6 +16,8 @@ jobs:
         working-directory: android
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true # ncnn, built from source into the app
 
       - uses: actions/setup-java@v4
         with:
@@ -23,6 +25,23 @@ jobs:
           java-version: "21"
 
       - uses: gradle/actions/setup-gradle@v4
+
+      # Compiling ncnn takes several minutes. ccache keys on file contents, so it works on a fresh checkout.
+      - name: Set up ccache
+        id: ccache
+        working-directory: .
+        run: |
+          sudo apt-get install -y --no-install-recommends ccache > /dev/null
+          echo "ncnn=$(git rev-parse HEAD:third_party/ncnn)" >> "$GITHUB_OUTPUT"
+          echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
+          echo "CCACHE_COMPILERCHECK=content" >> "$GITHUB_ENV"
+          echo "CCACHE_MAXSIZE=1G" >> "$GITHUB_ENV"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ steps.ccache.outputs.ncnn }}-${{ github.sha }}
+          restore-keys: ccache-${{ steps.ccache.outputs.ncnn }}-
 
       - name: Install the Android SDK parts the build pins
         run: |

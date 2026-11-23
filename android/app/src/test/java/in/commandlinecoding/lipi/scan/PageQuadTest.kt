@@ -100,4 +100,36 @@ class PageQuadTest {
         assertFalse(square.differsFrom(PageQuad.inset(0.2f)))
         assertTrue(square.differsFrom(square.moveCorner(1, 0.7f, 0.3f)))
     }
+
+    // A tall page in the left part of a landscape frame: top-left (0.1, 0.1), bottom-right (0.4, 0.9).
+    private val tall = PageQuad.of(listOf(Corner(0.1f, 0.1f), Corner(0.4f, 0.1f), Corner(0.4f, 0.9f), Corner(0.1f, 0.9f)))!!
+
+    @Test
+    fun quarterTurnMovesCornersAndKeepsTheOrder() {
+        val turned = tall.rotatedClockwise(1)
+        // The image turned clockwise: what was at the left is now at the top, and the old left edge is the new top edge.
+        assertNear(Corner(0.1f, 0.1f), turned.corners[0])
+        assertNear(Corner(0.9f, 0.1f), turned.corners[1])
+        assertNear(Corner(0.9f, 0.4f), turned.corners[2])
+        assertNear(Corner(0.1f, 0.4f), turned.corners[3])
+        assertTrue(PageQuad.isValid(turned.corners))
+    }
+
+    @Test
+    fun fourQuarterTurnsAreNoTurn() {
+        assertSame(tall, tall.rotatedClockwise(4), 1e-5f)
+        assertSame(tall.rotatedClockwise(3), tall.rotatedClockwise(1).rotatedClockwise(2), 1e-5f)
+        assertSame(tall, tall.rotatedClockwise(0), 1e-5f)
+    }
+
+    @Test
+    fun negativeTurnsGoTheOtherWay() = assertSame(tall.rotatedClockwise(3), tall.rotatedClockwise(-1), 1e-6f)
+
+    private fun assertNear(expected: Corner, actual: Corner) {
+        assertEquals(expected.x, actual.x, 1e-5f)
+        assertEquals(expected.y, actual.y, 1e-5f)
+    }
+
+    private fun assertSame(expected: PageQuad, actual: PageQuad, tolerance: Float) =
+        expected.corners.indices.forEach { assertNear(expected.corners[it], actual.corners[it]).also { _ -> } }
 }

@@ -28,7 +28,10 @@ add_library(lipi::core ALIAS lipi_core)
 # (built with NCNN_VULKAN=OFF), e.g. -DLIPI_WITH_NCNN=ON -DCMAKE_PREFIX_PATH=/opt/ncnn.
 option(LIPI_WITH_NCNN "Build the learned page detector on top of ncnn" OFF)
 if(LIPI_WITH_NCNN)
-  find_package(ncnn REQUIRED)
+  # A build that already has an ncnn target (the Android app builds it from source) is used as it is.
+  if(NOT TARGET ncnn)
+    find_package(ncnn REQUIRED)
+  endif()
   target_link_libraries(lipi_core PRIVATE ncnn)
   # Some ncnn builds export -fno-exceptions -fno-rtti to their users. The core reports allocation failures as
   # status codes with try/catch, so it must not inherit them. ncnn only needs the headers and the libraries.

@@ -36,6 +36,20 @@ class PageQuad private constructor(val corners: List<Corner>) {
         }
     }
 
+    /**
+     * The outline of the same page after the image is turned [quarterTurns] times a quarter clockwise, for example to go
+     * from a camera frame in sensor orientation to the upright picture. The corners keep the top-left, top-right,
+     * bottom-right, bottom-left order of the new picture.
+     */
+    fun rotatedClockwise(quarterTurns: Int): PageQuad {
+        var c = corners
+        repeat(((quarterTurns % 4) + 4) % 4) {
+            // A point (x, y) goes to (1 - y, x); the old bottom-left corner becomes the top-left one, and so on.
+            c = listOf(c[3], c[0], c[1], c[2]).map { Corner(1f - it.y, it.x) }
+        }
+        return PageQuad(c)
+    }
+
     /** The position of edge [index]'s midpoint. */
     fun edgeMidpoint(index: Int): Corner {
         val a = corners[index]
