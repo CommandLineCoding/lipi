@@ -22,9 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import `in`.commandlinecoding.lipi.LipiApplication
 import `in`.commandlinecoding.lipi.R
 import `in`.commandlinecoding.lipi.ui.components.HomeBottomBar
@@ -41,9 +43,12 @@ object Routes {
     const val Library = "library"
     const val Settings = "settings"
     const val Camera = "camera"
-    const val Adjust = "adjust"
+    const val AdjustPattern = "adjust?page={page}&single={single}"
     const val Enhance = "enhance"
     const val Export = "export"
+
+    /** Adjust corners from the first page that has no confirmed outline, or, with [single], for page [page] only (the crop tool). */
+    fun adjust(page: Int = -1, single: Boolean = false) = "adjust?page=$page&single=$single"
 }
 
 /** Root of the app: the navigation graph. Screens that are not built yet show a placeholder. */
@@ -73,12 +78,20 @@ fun LipiApp() {
                 CameraScreen(
                     session = app.session,
                     onClose = { nav.popBackStack() },
-                    onReview = { nav.navigate(Routes.Adjust) { launchSingleTop = true } },
+                    onReview = { nav.navigate(Routes.adjust()) { launchSingleTop = true } },
                 )
             }
-            composable(Routes.Adjust) {
+            composable(
+                Routes.AdjustPattern,
+                arguments = listOf(
+                    navArgument("page") { type = NavType.IntType; defaultValue = -1 },
+                    navArgument("single") { type = NavType.BoolType; defaultValue = false },
+                ),
+            ) { entry ->
                 AdjustScreen(
                     session = app.session,
+                    startPage = entry.arguments?.getInt("page") ?: -1,
+                    single = entry.arguments?.getBoolean("single") ?: false,
                     onBack = { nav.popBackStack() },
                     onRetake = { nav.popBackStack() },
                     onDone = { nav.navigate(Routes.Enhance) { launchSingleTop = true } },
@@ -86,7 +99,14 @@ fun LipiApp() {
             }
             composable(Routes.Enhance) {
                 val vm: EnhanceViewModel = viewModel(factory = viewModelFactory { initializer { EnhanceViewModel(app.session) } })
-                EnhanceScreen(vm, onBack = { nav.popBackStack() }, onDone = { nav.navigate(Routes.Export) { launchSingleTop = true } })
+                EnhanceScreen(
+                    vm,
+                    onBack = { nav.popBackStack() },
+                    onDone = { nav.navigate(Routes.Export) { launchSingleTop = true } },
+                    onCrop = { page -> nav.navigate(Routes.adjust(page = page, single = true)) { launchSingleTop = true } },
+                    // Back to the camera, which still holds the pages so far; a new photo is added to them.
+                    onAddPage = { if (!nav.popBackStack(Routes.Camera, false)) nav.navigate(Routes.Camera) },
+                )
             }
             composable(Routes.Export) { Placeholder(stringResource(R.string.export_title)) }
         }

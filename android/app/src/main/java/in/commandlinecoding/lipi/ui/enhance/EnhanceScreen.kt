@@ -37,6 +37,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import `in`.commandlinecoding.lipi.R
 import `in`.commandlinecoding.lipi.scan.EnhanceFilter
 import `in`.commandlinecoding.lipi.scan.signed
+import `in`.commandlinecoding.lipi.ui.components.LipiIcon
 import `in`.commandlinecoding.lipi.ui.components.RoundIconButton
 import `in`.commandlinecoding.lipi.ui.theme.LocalLipiColors
 import kotlin.math.abs
@@ -62,14 +65,16 @@ import kotlin.math.roundToInt
 
 /** Look and feel of one page: the cleaned-up preview, the filter row and the brightness and contrast sliders. */
 @Composable
-fun EnhanceScreen(viewModel: EnhanceViewModel, onBack: () -> Unit, onDone: () -> Unit) {
+fun EnhanceScreen(viewModel: EnhanceViewModel, onBack: () -> Unit, onDone: () -> Unit, onCrop: (Int) -> Unit, onAddPage: () -> Unit) {
     val state by viewModel.state.collectAsState()
     var comparing by remember { mutableStateOf(false) }
+    // The crop tool leaves this screen; when it comes back the page may have a new outline.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reloadIfCropped() }
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         TopBar(state.pageIndex, state.pageCount, onBack = onBack, onDone = onDone)
         Column(
-            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).navigationBarsPadding().padding(bottom = 16.dp),
+            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(bottom = 16.dp),
         ) {
             PreviewCard(
                 shown = if (comparing) state.original else state.preview,
@@ -92,6 +97,45 @@ fun EnhanceScreen(viewModel: EnhanceViewModel, onBack: () -> Unit, onDone: () ->
             Spacer(Modifier.height(12.dp))
             LabeledSlider(stringResource(R.string.enhance_contrast), state.edit.contrast, viewModel::setContrast)
         }
+        ToolsBar(
+            enabled = !state.loading && !state.failed,
+            onRotate = viewModel::rotate,
+            onCrop = { onCrop(state.pageIndex) },
+            onAddPage = onAddPage,
+        )
+    }
+}
+
+/** Rotate, crop and add page, on a raised bar along the bottom as in the design. */
+@Composable
+private fun ToolsBar(enabled: Boolean, onRotate: () -> Unit, onCrop: () -> Unit, onAddPage: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+            .navigationBarsPadding()
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        Tool(R.drawable.ic_rotate, stringResource(R.string.tool_rotate), enabled, onRotate)
+        Tool(R.drawable.ic_crop, stringResource(R.string.tool_crop), enabled, onCrop)
+        Tool(R.drawable.ic_plus, stringResource(R.string.tool_add_page), enabled, onAddPage)
+    }
+}
+
+@Composable
+private fun Tool(icon: Int, label: String, enabled: Boolean, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier.width(64.dp).clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier.size(44.dp).background(MaterialTheme.colorScheme.background, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            LipiIcon(icon, MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.4f), size = 22.dp)
+        }
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
     }
 }
 

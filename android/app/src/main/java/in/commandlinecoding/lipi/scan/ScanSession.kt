@@ -33,6 +33,9 @@ class ScanSession(private val dir: File) {
     /** The page outline the user confirmed for [file], if any. */
     fun quadOf(file: File): PageQuad? = quads[file]
 
+    /** The first page whose outline the user has not confirmed yet, or 0 when every page has one (or there are none). */
+    fun firstUnconfirmedIndex(): Int = _pages.value.indexOfFirst { quads[it] == null }.coerceAtLeast(0)
+
     fun setQuad(file: File, quad: PageQuad) {
         quads[file] = quad
     }
