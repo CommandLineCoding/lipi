@@ -21,6 +21,15 @@ class ScanSession(private val dir: File) {
     private var counter = 0
     private val quads = ConcurrentHashMap<File, PageQuad>()
 
+    private val edits = ConcurrentHashMap<File, PageEdit>()
+
+    /** The filter, sliders and turns the user chose for [file]; the defaults until they change something. */
+    fun editOf(file: File): PageEdit = edits[file] ?: PageEdit()
+
+    fun setEdit(file: File, edit: PageEdit) {
+        edits[file] = edit
+    }
+
     /** The page outline the user confirmed for [file], if any. */
     fun quadOf(file: File): PageQuad? = quads[file]
 
@@ -31,6 +40,7 @@ class ScanSession(private val dir: File) {
     /** Drops one page and its image, for example when the user retakes it. */
     fun remove(file: File) {
         quads.remove(file)
+        edits.remove(file)
         _pages.update { it - file }
         file.delete()
     }
@@ -66,6 +76,7 @@ class ScanSession(private val dir: File) {
         _pages.value.forEach { it.delete() }
         _pages.value = emptyList()
         quads.clear()
+        edits.clear()
         dir.listFiles()?.forEach { it.delete() }
     }
 }

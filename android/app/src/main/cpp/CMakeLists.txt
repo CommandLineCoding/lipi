@@ -7,7 +7,7 @@ set(LIPI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 get_filename_component(LIPI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../.." ABSOLUTE)
 add_subdirectory("${LIPI_ROOT}" lipi)
 
-add_library(lipi_jni SHARED lipi_jni.cpp)
+add_library(lipi_jni SHARED lipi_jni.cpp lipi_jni_pages.cpp)
 target_link_libraries(lipi_jni PRIVATE lipi::core lipi_options log jnigraphics)
 # 16 KB page alignment, as Android 15+ and the Play Store require.
 target_link_options(lipi_jni PRIVATE -Wl,-z,max-page-size=16384)
