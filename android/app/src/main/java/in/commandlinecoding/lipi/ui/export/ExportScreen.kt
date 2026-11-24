@@ -1,5 +1,7 @@
 package `in`.commandlinecoding.lipi.ui.export
 
+import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -50,6 +52,9 @@ import `in`.commandlinecoding.lipi.scan.ExportFormat
 import `in`.commandlinecoding.lipi.ui.components.LipiIcon
 import `in`.commandlinecoding.lipi.ui.components.RoundIconButton
 import `in`.commandlinecoding.lipi.ui.components.SegmentedControl
+
+/** Where the folder picker for several JPEGs starts. Android does not let an app write into the top of the storage or into Downloads. */
+private val DocumentsFolder: Uri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
 
 /** Name, format and compression of the scan, and Save, which asks the system where to put the file. */
 @Composable
@@ -129,7 +134,7 @@ fun ExportScreen(viewModel: ExportViewModel, onBack: () -> Unit, onSaved: () -> 
                         when {
                             state.format == ExportFormat.Pdf -> savePdf.launch(viewModel.suggestedFileName())
                             state.pageCount == 1 -> saveJpg.launch(viewModel.suggestedFileName())
-                            else -> saveFolder.launch(null)
+                            else -> saveFolder.launch(DocumentsFolder)
                         }
                     },
                 verticalAlignment = Alignment.CenterVertically,
