@@ -52,7 +52,7 @@ add_subdirectory("${LIPI_ROOT}/third_party/ncnn" ncnn)
 set(LIPI_WITH_NCNN ON CACHE BOOL "" FORCE)
 add_subdirectory("${LIPI_ROOT}" lipi)
 
-add_library(lipi_jni SHARED lipi_jni.cpp)
+add_library(lipi_jni SHARED lipi_jni.cpp lipi_jni_pages.cpp)
 target_link_libraries(lipi_jni PRIVATE lipi::core lipi_options log jnigraphics)
 # 16 KB page alignment, as Android 15+ and the Play Store require.
 target_link_options(lipi_jni PRIVATE -Wl,-z,max-page-size=16384)

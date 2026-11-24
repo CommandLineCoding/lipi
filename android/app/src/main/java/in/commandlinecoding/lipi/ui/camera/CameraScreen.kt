@@ -70,6 +70,7 @@ import `in`.commandlinecoding.lipi.scan.LiveDetector
 import `in`.commandlinecoding.lipi.scan.LiveOutline
 import `in`.commandlinecoding.lipi.scan.PageDetector
 import `in`.commandlinecoding.lipi.scan.ScanSession
+import `in`.commandlinecoding.lipi.ui.components.LightSystemBarIcons
 import `in`.commandlinecoding.lipi.ui.components.LipiIcon
 import `in`.commandlinecoding.lipi.ui.library.rememberThumbnail
 import `in`.commandlinecoding.lipi.ui.theme.CameraPalette
@@ -110,6 +111,7 @@ fun CameraScreen(session: ScanSession, onClose: () -> Unit, onReview: () -> Unit
     val openPicker = { pickPhotos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
     val close = { if (pages.isEmpty()) onClose() else confirmDiscard = true }
 
+    LightSystemBarIcons()
     LaunchedEffect(Unit) { if (permission == Permission.Unknown) askPermission.launch(Manifest.permission.CAMERA) }
     BackHandler(onBack = close)
 

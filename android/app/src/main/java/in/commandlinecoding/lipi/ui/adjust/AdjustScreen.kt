@@ -60,6 +60,7 @@ import `in`.commandlinecoding.lipi.scan.LiveDetector
 import `in`.commandlinecoding.lipi.scan.PageQuad
 import `in`.commandlinecoding.lipi.scan.ScanSession
 import `in`.commandlinecoding.lipi.scan.differsFrom
+import `in`.commandlinecoding.lipi.ui.components.LightSystemBarIcons
 import `in`.commandlinecoding.lipi.ui.components.LipiIcon
 import `in`.commandlinecoding.lipi.ui.library.decodeUpright
 import `in`.commandlinecoding.lipi.ui.theme.CameraPalette
@@ -117,6 +118,7 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
         if (session.quadOf(page) == null) runAuto(decoded)
     }
 
+    LightSystemBarIcons()
     val autoActive = detected?.let { !quad.differsFrom(it) } == true
     val close = { onBack() }
     BackHandler(onBack = close)
@@ -139,7 +141,7 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
         }
         val hint = when {
             notFound -> stringResource(R.string.adjust_not_found)
-            pages.size > 1 -> stringResource(R.string.adjust_page_of, index + 1, pages.size) + " · " + stringResource(R.string.adjust_hint)
+            pages.size > 1 -> stringResource(R.string.page_of, index + 1, pages.size) + " · " + stringResource(R.string.adjust_hint)
             else -> stringResource(R.string.adjust_hint)
         }
         Text(
