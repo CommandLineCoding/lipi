@@ -16,4 +16,10 @@ object NativePages {
 
     /** Cleans [src] up into [dst], which has the same size. [filter] is the core's filter number (1 Auto, 2 B&W, 3 Gray, 4 Color). */
     external fun enhance(src: Bitmap, dst: Bitmap, filter: Int, removeShadows: Boolean, brightness: Float, contrast: Float): Boolean
+
+    /**
+     * Writes a PDF with one page per JPEG file to the open file descriptor [fd], which the caller keeps ownership of.
+     * [dpis] gives the resolution of each page and so its size on paper.
+     */
+    external fun writePdf(jpegPaths: Array<String>, dpis: FloatArray, fd: Int): Boolean
 }

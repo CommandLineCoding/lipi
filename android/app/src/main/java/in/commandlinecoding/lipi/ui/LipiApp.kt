@@ -32,6 +32,8 @@ import `in`.commandlinecoding.lipi.R
 import `in`.commandlinecoding.lipi.ui.components.HomeBottomBar
 import `in`.commandlinecoding.lipi.ui.enhance.EnhanceScreen
 import `in`.commandlinecoding.lipi.ui.enhance.EnhanceViewModel
+import `in`.commandlinecoding.lipi.ui.export.ExportScreen
+import `in`.commandlinecoding.lipi.ui.export.ExportViewModel
 import `in`.commandlinecoding.lipi.ui.adjust.AdjustScreen
 import `in`.commandlinecoding.lipi.ui.camera.CameraScreen
 import `in`.commandlinecoding.lipi.ui.components.HomeTab
@@ -108,7 +110,15 @@ fun LipiApp() {
                     onAddPage = { if (!nav.popBackStack(Routes.Camera, false)) nav.navigate(Routes.Camera) },
                 )
             }
-            composable(Routes.Export) { Placeholder(stringResource(R.string.export_title)) }
+            composable(Routes.Export) {
+                val vm: ExportViewModel = viewModel(factory = viewModelFactory { initializer { ExportViewModel(app.session, app.documents, app.contentResolver) } })
+                ExportScreen(
+                    vm,
+                    onBack = { nav.popBackStack() },
+                    // Saved: the scan is in the library, so go there and drop the scanning screens from the back stack.
+                    onSaved = { nav.navigate(Routes.Library) { popUpTo(Routes.Library) { inclusive = true }; launchSingleTop = true } },
+                )
+            }
         }
     }
 }
