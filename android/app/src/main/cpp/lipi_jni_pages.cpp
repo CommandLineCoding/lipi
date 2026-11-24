@@ -3,8 +3,13 @@
 #include <android/bitmap.h>
 #include <jni.h>
 
+#include <unistd.h>
+
+#include <cerrno>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
+#include <vector>
 
 #include "lipi/lipi.h"
 
@@ -83,6 +88,39 @@ bool readQuad(JNIEnv* env, jfloatArray array, lipi_quad* quad) {
   return true;
 }
 
+// Writes to a file descriptor and says how many bytes went through, as the core's PDF writer wants.
+size_t writeToFd(const void* data, size_t size, void* user) {
+  const int fd = *static_cast<int*>(user);
+  const uint8_t* bytes = static_cast<const uint8_t*>(data);
+  size_t done = 0;
+  while (done < size) {
+    const ssize_t n = ::write(fd, bytes + done, size - done);
+    if (n < 0) {
+      if (errno == EINTR) continue;
+      return done;
+    }
+    if (n == 0) return done;
+    done += static_cast<size_t>(n);
+  }
+  return done;
+}
+
+bool readFile(const char* path, std::vector<uint8_t>* out) {
+  FILE* f = std::fopen(path, "rb");
+  if (f == nullptr) return false;
+  std::fseek(f, 0, SEEK_END);
+  const long size = std::ftell(f);
+  std::fseek(f, 0, SEEK_SET);
+  if (size <= 0) {
+    std::fclose(f);
+    return false;
+  }
+  out->resize(static_cast<size_t>(size));
+  const size_t read = std::fread(out->data(), 1, out->size(), f);
+  std::fclose(f);
+  return read == out->size();
+}
+
 }  // namespace
 
 // The size of the flat page that a quad (corner pixels of an image of width x height) shows, the longer side at most
@@ -135,4 +173,31 @@ extern "C" JNIEXPORT jboolean JNICALL Java_in_commandlinecoding_lipi_NativePages
   const bool stored = out.store(result);
   lipi_image_free(result);
   return stored ? JNI_TRUE : JNI_FALSE;
+}
+
+// Writes a PDF with one page per JPEG file, in the order given, to the file descriptor `fd` (which stays open and
+// belongs to the caller). The images are stored as they are, without being compressed again. dpis[i] sets the size of page i.
+extern "C" JNIEXPORT jboolean JNICALL Java_in_commandlinecoding_lipi_NativePages_writePdf(JNIEnv* env, jobject, jobjectArray paths,
+                                                                                         jfloatArray dpis, jint fd) {
+  if (paths == nullptr || dpis == nullptr) return JNI_FALSE;
+  const jsize count = env->GetArrayLength(paths);
+  if (count <= 0 || env->GetArrayLength(dpis) < count) return JNI_FALSE;
+  std::vector<jfloat> dpi(static_cast<size_t>(count));
+  env->GetFloatArrayRegion(dpis, 0, count, dpi.data());
+
+  int out = fd;
+  lipi_pdf* pdf = nullptr;
+  if (lipi_pdf_create(writeToFd, &out, &pdf) != LIPI_OK) return JNI_FALSE;
+  bool ok = true;
+  for (jsize i = 0; i < count && ok; ++i) {
+    jstring jpath = static_cast<jstring>(env->GetObjectArrayElement(paths, i));
+    const char* path = jpath == nullptr ? nullptr : env->GetStringUTFChars(jpath, nullptr);
+    std::vector<uint8_t> jpeg;
+    ok = path != nullptr && readFile(path, &jpeg) && lipi_pdf_add_page_jpeg(pdf, jpeg.data(), jpeg.size(), dpi[static_cast<size_t>(i)]) == LIPI_OK;
+    if (path != nullptr) env->ReleaseStringUTFChars(jpath, path);
+    if (jpath != nullptr) env->DeleteLocalRef(jpath);
+  }
+  ok = ok && lipi_pdf_finish(pdf) == LIPI_OK;
+  lipi_pdf_free(pdf);
+  return ok ? JNI_TRUE : JNI_FALSE;
 }

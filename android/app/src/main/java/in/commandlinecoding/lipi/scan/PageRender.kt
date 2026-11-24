@@ -3,6 +3,7 @@ package `in`.commandlinecoding.lipi.scan
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import `in`.commandlinecoding.lipi.NativePages
+import `in`.commandlinecoding.lipi.ui.library.decodeUpright
 
 /** Turns a photo and the user's choices into the page as it will look: flatten, rotate, clean up. All of this is slow; call it off the main thread. */
 object PageRender {
@@ -20,6 +21,16 @@ object PageRender {
         val size = NativePages.estimatePageSize(corners, w, h, maxSide) ?: return null
         val flat = Bitmap.createBitmap(size[0], size[1], Bitmap.Config.ARGB_8888)
         return if (NativePages.warpQuad(source, corners, flat)) flat else null
+    }
+
+    /**
+     * The finished page: the photo at [path] flattened inside [quad] (the whole photo a little inset if there is none),
+     * turned and cleaned up as [edit] says, with its longer side at most [maxSide] pixels.
+     */
+    fun renderFinal(path: String, quad: PageQuad?, edit: PageEdit, maxSide: Int): Bitmap? {
+        val source = decodeUpright(path, maxSide) ?: return null
+        val flat = flatten(source, quad ?: PageQuad.inset(0.02f), maxSide) ?: return null
+        return enhance(rotate(flat, edit.quarterTurns), edit)
     }
 
     fun rotate(bitmap: Bitmap, quarterTurns: Int): Bitmap {
