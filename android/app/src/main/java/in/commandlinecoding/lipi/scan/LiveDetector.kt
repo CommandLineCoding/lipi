@@ -62,7 +62,11 @@ class LiveDetector(private val detector: PageDetector) : ImageAnalysis.Analyzer,
     }
 
     companion object {
-        /** Below this the outline is not shown. The model's confidence is not calibrated; the value comes from trying it on a phone. */
-        const val MIN_CONFIDENCE = 0.3f
+        /**
+         * Below this the outline is not shown. The confidence is the lowest corner heat-map peak, which tops out at about 0.06
+         * (see models/page-net/MODEL_CARD.md). On the held-out real photos 0.04 keeps 94% of the detections that overlap
+         * the page by 0.9 or more and drops most of the poor ones.
+         */
+        const val MIN_CONFIDENCE = 0.04f
     }
 }
