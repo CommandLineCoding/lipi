@@ -56,6 +56,9 @@
     <string name="filter_gray">Gray</string>
     <string name="filter_color">Color</string>
     <string name="export_title">Export</string>
+    <string name="tool_rotate">Rotate</string>
+    <string name="tool_crop">Crop</string>
+    <string name="tool_add_page">Add page</string>
     <string name="scan">Scan a document</string>
     <string name="delete">Delete</string>
     <string name="date_today">Today</string>

@@ -75,11 +75,13 @@ private const val LOUPE_ZOOM = 2.5f
 /**
  * Lets the user confirm or correct the four corners of each captured page, one page after the other.
  * [onRetake] is called after the current page was removed; [onDone] after the last page was confirmed.
+ * It starts at [startPage], or at the first page without a confirmed outline when that is not a page. With [single] it
+ * adjusts that one page only (the crop tool of the Enhance screen) and has no Retake.
  */
 @Composable
-fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit, onDone: () -> Unit) {
+fun AdjustScreen(session: ScanSession, startPage: Int, single: Boolean, onBack: () -> Unit, onRetake: () -> Unit, onDone: () -> Unit) {
     val pages by session.pages.collectAsState()
-    var index by rememberSaveable { mutableIntStateOf(0) }
+    var index by rememberSaveable { mutableIntStateOf(if (startPage in session.pages.value.indices) startPage else session.firstUnconfirmedIndex()) }
     val page = pages.getOrNull(index)
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -155,12 +157,14 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ActionButton(
-                label = stringResource(R.string.adjust_retake),
-                background = CameraPalette.Control,
-                modifier = Modifier.width(104.dp),
-                onClick = { leaving = true; session.remove(page); onRetake() },
-            )
+            if (!single) {
+                ActionButton(
+                    label = stringResource(R.string.adjust_retake),
+                    background = CameraPalette.Control,
+                    modifier = Modifier.width(104.dp),
+                    onClick = { leaving = true; session.remove(page); onRetake() },
+                )
+            }
             ActionButton(
                 label = stringResource(R.string.adjust_next),
                 background = CameraPalette.Indigo,
@@ -169,7 +173,7 @@ fun AdjustScreen(session: ScanSession, onBack: () -> Unit, onRetake: () -> Unit,
                 enabled = bitmap != null && !searching,
                 onClick = {
                     session.setQuad(page, quad)
-                    if (index + 1 < pages.size) index += 1 else { leaving = true; onDone() }
+                    if (!single && index + 1 < pages.size) index += 1 else { leaving = true; onDone() }
                 },
             )
         }

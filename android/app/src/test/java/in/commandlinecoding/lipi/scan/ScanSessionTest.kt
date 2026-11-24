@@ -65,4 +65,17 @@ class ScanSessionTest {
         session.clear()
         assertEquals(null, session.quadOf(f))
     }
+
+    @Test fun firstUnconfirmedIndexSkipsPagesWithAnOutline() {
+        val session = ScanSession(tmp.newFolder("s"))
+        assertEquals(0, session.firstUnconfirmedIndex()) // no pages
+        val files = (1..3).map { session.newRawFile().also { f -> f.writeText("x$it") } }
+        files.forEach(session::add)
+        assertEquals(0, session.firstUnconfirmedIndex())
+        session.setQuad(files[0], PageQuad.inset())
+        session.setQuad(files[1], PageQuad.inset())
+        assertEquals(2, session.firstUnconfirmedIndex())
+        session.setQuad(files[2], PageQuad.inset())
+        assertEquals(0, session.firstUnconfirmedIndex()) // everything confirmed: start from the first page
+    }
 }

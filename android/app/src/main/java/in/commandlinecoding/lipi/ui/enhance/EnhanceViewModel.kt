@@ -43,6 +43,7 @@ class EnhanceViewModel(private val session: ScanSession) : ViewModel() {
     val state: StateFlow<EnhanceState> = _state.asStateFlow()
 
     private var flat: Bitmap? = null // the current page flattened, before turning and cleaning up
+    @Volatile private var shownQuad: PageQuad? = null // the outline that [flat] was made with
     private var loadJob: Job? = null
     private val requests = MutableSharedFlow<PageEdit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
@@ -69,6 +70,24 @@ class EnhanceViewModel(private val session: ScanSession) : ViewModel() {
             requests.emit(_state.value.edit)
             val thumbnails = withContext(Dispatchers.Default) { thumbnailsOf(loaded, _state.value.edit.quarterTurns) }
             _state.update { it.copy(thumbnails = thumbnails) }
+        }
+    }
+
+    /** Flattens the page again if its outline was changed meanwhile, for example with the crop tool. */
+    fun reloadIfCropped() {
+        val file = pages.getOrNull(_state.value.pageIndex) ?: return
+        if (!_state.value.loading && session.quadOf(file) != shownQuad) show(_state.value.pageIndex)
+    }
+
+    /** Turns the page a quarter clockwise. */
+    fun rotate() {
+        change { it.turnedClockwise() }
+        val base = flat ?: return
+        val turns = _state.value.edit.quarterTurns
+        viewModelScope.launch {
+            val thumbnails = withContext(Dispatchers.Default) { thumbnailsOf(base, turns) }
+            // Skip it if the page, or the turn, changed while the thumbnails were made.
+            _state.update { if (flat === base && it.edit.quarterTurns == turns) it.copy(thumbnails = thumbnails) else it }
         }
     }
 
@@ -103,6 +122,7 @@ class EnhanceViewModel(private val session: ScanSession) : ViewModel() {
         val file = pages[index]
         val source = decodeUpright(file.path, PageRender.SOURCE_EDGE) ?: return null
         val quad = session.quadOf(file) ?: PageQuad.inset(0.02f)
+        shownQuad = session.quadOf(file)
         return PageRender.flatten(source, quad, PageRender.PREVIEW_SIDE)
     }
 
