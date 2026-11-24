@@ -36,7 +36,7 @@ You need Git, CMake 3.20+ and a C++17 compiler. Ninja is optional but faster. Fo
 ### Core and CLI
 
 ```bash
-git clone https://github.com/<you>/lipi.git
+git clone --recurse-submodules https://github.com/<you>/lipi.git
 cd lipi
 cmake -S . -B build -G Ninja
 cmake --build build
@@ -70,6 +70,8 @@ python3 tools/check_no_network.py app/build/outputs/apk/debug/app-debug.apk
 python3 tools/check_alignment.py app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:dependencies --configuration releaseRuntimeClasspath -q | python3 tools/check_dependencies.py
 ```
+
+The first build compiles ncnn (the inference engine, a git submodule in `third_party/ncnn`, so clone with `--recurse-submodules` or run `git submodule update --init --depth 1`) and takes several minutes; installing `ccache` makes later clean builds quick. The bundled page-detection model is copied from `models/page-net/` at build time.
 
 The last three lines are the same checks CI runs: the app must not ask for any network permission, its native libraries must be 16 KB page-aligned, and it must not depend on proprietary or incompatible libraries. The Gradle, plugin, NDK and library versions are pinned in `android/gradle/libs.versions.toml` and `android/app/build.gradle.kts`, so builds stay reproducible.
 

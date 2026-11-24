@@ -9,6 +9,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.LifecycleCameraController
@@ -44,6 +45,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -64,11 +66,17 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import `in`.commandlinecoding.lipi.R
+import `in`.commandlinecoding.lipi.scan.LiveDetector
+import `in`.commandlinecoding.lipi.scan.LiveOutline
+import `in`.commandlinecoding.lipi.scan.PageDetector
 import `in`.commandlinecoding.lipi.scan.ScanSession
 import `in`.commandlinecoding.lipi.ui.components.LipiIcon
 import `in`.commandlinecoding.lipi.ui.library.rememberThumbnail
 import `in`.commandlinecoding.lipi.ui.theme.CameraPalette
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.concurrent.Executors
 
 private enum class Permission { Unknown, Granted, Denied }
 
@@ -147,7 +155,28 @@ fun CameraScreen(session: ScanSession, onClose: () -> Unit, onReview: () -> Unit
 private fun CameraPreview(session: ScanSession, pageCount: Int, lastPage: String?, onClose: () -> Unit, onReview: () -> Unit, onPick: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val controller = remember { LifecycleCameraController(context).apply { setEnabledUseCases(LifecycleCameraController.IMAGE_CAPTURE) } }
+    val controller = remember {
+        LifecycleCameraController(context).apply {
+            setEnabledUseCases(LifecycleCameraController.IMAGE_CAPTURE or LifecycleCameraController.IMAGE_ANALYSIS)
+            setImageAnalysisOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+            setImageAnalysisBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+        }
+    }
+    // The detector is loaded off the main thread; until it is there (or if this build has none) the camera works without an outline.
+    val live by produceState<LiveDetector?>(initialValue = null) {
+        value = withContext(Dispatchers.Default) { PageDetector.create(context)?.let { LiveDetector(it) } }
+    }
+    val outline by remember(live) { live?.outline ?: kotlinx.coroutines.flow.MutableStateFlow<LiveOutline?>(null) }.collectAsState()
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
+    DisposableEffect(live) {
+        val detector = live
+        if (detector != null) controller.setImageAnalysisAnalyzer(analysisExecutor, detector)
+        onDispose {
+            controller.clearImageAnalysisAnalyzer()
+            detector?.close()
+        }
+    }
+    DisposableEffect(Unit) { onDispose { analysisExecutor.shutdown() } }
     var torchOn by remember { mutableStateOf(false) }
     var capturing by remember { mutableStateOf(false) }
     var captureFailed by remember { mutableStateOf(false) }
@@ -184,6 +213,7 @@ private fun CameraPreview(session: ScanSession, pageCount: Int, lastPage: String
             modifier = Modifier.fillMaxSize(),
             factory = { PreviewView(it).apply { this.controller = controller; scaleType = PreviewView.ScaleType.FIT_CENTER } },
         )
+        OutlineOverlay(outline)
 
         Row(
             modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp),

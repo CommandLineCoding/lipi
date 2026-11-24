@@ -19,7 +19,7 @@ Finding the outline of a printed page, receipt, ID card, note or whiteboard in a
 
 - Input `in0`: a 3 x 256 x 256 float image, RGB, values 0 to 255. The photo is area-averaged down to this size (the core does this); the graph normalises it itself.
 - Output `out0`: four corners (x, y between 0 and 1 of the image), ordered top-left, top-right, bottom-right, bottom-left as seen on the image.
-- Output `out1`: the peak of each corner's heat map, 0 to 1. This is a rough confidence and has not been calibrated against IoU.
+- Output `out1`: the peak of each corner's heat map. This is a rough confidence. In practice it tops out at about 0.06, not 1, because the heat maps are trained towards a narrow Gaussian: on the real test photos the lowest peak per photo has a median of 0.057 for detections that overlap the page by 0.9 or more (5th percentile 0.040) and 0.035 for those below 0.7. A cut-off of 0.04 keeps 94% of the good detections (211 of 224) and rejects most of the poor ones (14 of 23).
 - Output `out2`: four logits for the page orientation, the number of clockwise quarter turns that make the flattened page upright.
 
 ## Architecture
@@ -61,7 +61,7 @@ PageNet was retrained with 2,400 ID-card frames from MIDV added (training only, 
 - **Real photos are the weak spot.** 22% of real test pages are below IoU 0.90, and the 95th percentile of corner error is 7.5% of the diagonal. Failures are mostly pages that are partly out of frame, held in a hand, or low in contrast against the background.
 - **Orientation is only measured on synthetic pages.** The real photos carry no orientation label, so the head learned it from synthetic pages alone, and it is visibly less reliable on real ones. Do not trust it without a check, for example the OCR text direction later on.
 - **Narrow real-world coverage.** The real photos are mostly posters, flyers and printed pages with Persian or Arabic text, with few receipts, ID cards, books or handwritten notes. Curled pages and books are not covered.
-- **The confidence output is uncalibrated.** Use IoU against labelled data, not the raw value, to pick a threshold.
+- **The confidence output is only a rough guide.** It separates good from poor detections on average but not photo by photo, and there is no measurement on photos without a page (on a phone, an empty scene gave 0.01 to 0.03).
 - **Flat, four-cornered pages only.** One page per image; there is no "no page" output, so the app should ask the user to confirm or adjust the corners.
 
 ## Provenance and licence
