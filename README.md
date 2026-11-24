@@ -41,7 +41,7 @@ The Android app is built from `android/` with `./gradlew assembleDebug`.
 | `cli/` | `lipi-cli` command-line tool |
 | `android/` | Kotlin and Compose app |
 | `ml/`, `models/` | Training and evaluation code, the model, model and dataset cards |
-| `docs/` | [Architecture](docs/ARCHITECTURE.md), [C API](docs/CORE_API.md), [design tokens](docs/DESIGN.md) |
+| `docs/` | [Architecture](docs/ARCHITECTURE.md), [C API](docs/CORE_API.md), [design tokens](docs/DESIGN.md), [roadmap](docs/ROADMAP.md) |
 
 The UI follows this [Figma design](https://www.figma.com/design/7BVcimN4rnR0zgMLh78RXF).
 
