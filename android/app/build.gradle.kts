@@ -5,17 +5,22 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// The page detector's model is bundled with the app. It is copied from models/ so that there is one copy in the repository.
-// Only PageNet (trained without the CC BY-SA ID-card frames) is bundled; see models/page-net-small/MODEL_CARD.md.
-val bundledModels = layout.buildDirectory.dir("generated/models")
-val copyModels = tasks.register<Copy>("copyModels") {
+// What the app bundles besides code, copied from the repository so that there is one copy of each: the page detector's
+// model (only PageNet, trained without the CC BY-SA ID-card frames; see models/page-net-small/MODEL_CARD.md) and the
+// licence texts that the open-source licences ask us to ship with the app.
+val bundledAssets = layout.buildDirectory.dir("generated/assets")
+val copyBundledAssets = tasks.register<Copy>("copyBundledAssets") {
     from(rootProject.file("../models/page-net")) {
         include("page-net.ncnn.param", "page-net.ncnn.bin")
         into("models")
     }
-    into(bundledModels)
+    from(rootProject.file("../LICENSE")) { rename { "lipi-MIT.txt" }; into("licenses") }
+    from(rootProject.file("../third_party/ncnn/LICENSE.txt")) { rename { "ncnn-BSD-3-Clause.txt" }; into("licenses") }
+    from(rootProject.file("../third_party/fonts/inter/OFL.txt")) { rename { "inter-OFL-1.1.txt" }; into("licenses") }
+    from(rootProject.file("../third_party/licenses")) { include("Apache-2.0.txt", "checker-qual-MIT.txt"); into("licenses") }
+    into(bundledAssets)
 }
-tasks.named("preBuild") { dependsOn(copyModels) }
+tasks.named("preBuild") { dependsOn(copyBundledAssets) }
 
 android {
     namespace = "in.commandlinecoding.lipi"
@@ -73,7 +78,7 @@ android {
     }
 
     sourceSets {
-        getByName("main") { assets.srcDir(bundledModels) }
+        getByName("main") { assets.srcDir(bundledAssets) }
     }
 
     // Reproducible builds: no timestamps or VCS info in the output.

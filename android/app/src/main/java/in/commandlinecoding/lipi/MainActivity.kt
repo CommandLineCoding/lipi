@@ -5,8 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import `in`.commandlinecoding.lipi.data.ThemeMode
 import `in`.commandlinecoding.lipi.ui.LipiApp
 import `in`.commandlinecoding.lipi.ui.theme.LipiTheme
 
@@ -16,7 +19,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         lifecycleScope.launch { DemoSeed.maybeSeed(application as LipiApplication, intent) }
         setContent {
-            LipiTheme(darkTheme = DebugOptions.forcedDarkTheme(intent) ?: isSystemInDarkTheme()) {
+            val mode by (application as LipiApplication).preferences.theme.collectAsState()
+            val dark = DebugOptions.forcedDarkTheme(intent) ?: when (mode) {
+                ThemeMode.System -> isSystemInDarkTheme()
+                ThemeMode.Light -> false
+                ThemeMode.Dark -> true
+            }
+            LipiTheme(darkTheme = dark) {
                 LipiApp()
             }
         }

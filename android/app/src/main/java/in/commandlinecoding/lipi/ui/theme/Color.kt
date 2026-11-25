@@ -14,6 +14,9 @@ object LightPalette {
     val Primary = Color(0xFF3D5AFE)
     val OnPrimary = Color(0xFFFFFFFF)
     val Scrim = Color(0xB810131A) // 72% of the text colour, used by page-count pills
+    val PrimaryTint = Color(0xFFE8ECFF)
+    val Success = Color(0xFF12B76A)
+    val SuccessTint = Color(0xFFE7F7EF)
     val PaperLine = Color(0xFFE3E6EE)
     val PaperTitle = Color(0xFFC3C9D8)
     val ThumbTints = listOf(
@@ -31,6 +34,9 @@ object DarkPalette {
     val Primary = Color(0xFF8C9EFF)
     val OnPrimary = Color(0xFF0B1030)
     val Scrim = Color(0xB8000000)
+    val PrimaryTint = Color(0xFF1B2133)
+    val Success = Color(0xFF34D399)
+    val SuccessTint = Color(0xFF14291F)
     val PaperLine = Color(0xFF2B3140)
     val PaperTitle = Color(0xFF3A4152)
     val ThumbTints = listOf(
