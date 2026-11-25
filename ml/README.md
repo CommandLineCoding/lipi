@@ -110,3 +110,15 @@ A second training run added 2,400 MIDV ID-card frames to the data ([dataset card
 | [PageNet small](../models/page-net-small/MODEL_CARD.md) | 0.919 / 0.972, 80.5% | 0.982, 97.4% | 255,608 | 16.6 ms |
 
 The MIDV retrain is +0.008 mean IoU on real test photos (95% interval +0.002 to +0.016; share at 0.90: +2.8 points, interval -0.7 to +6.3; better on 58 photos, worse on 45, about equal on 184), and slightly worse on synthetic pages, so it was not shipped. The small model is within noise of PageNet on real photos (+0.003, interval -0.004 to +0.010) and 45% faster on the phone, but worse on synthetic pages and on orientation. Reports: `reports/page-net-v3-*.json`, `reports/page-net-small-*.json`, [`reports/on-device-small-sm-g781b.json`](reports/on-device-small-sm-g781b.json).
+
+### Text recognition
+
+[`ocr/`](ocr/) trains the recogniser for Bengali, Hindi and Latin text: a small convolutional network, a bidirectional LSTM and CTC, 0.85 million parameters, with one output step per 4 pixels of a 48-pixel-high line. It trains on endless synthetic lines mixed with the real printed words of Mozhi ([dataset card](../models/datasets/ocr-text.md)). Needs `torch`, `fonttools` and `pyarrow` on top of `requirements.txt`.
+
+```
+python -m ocr.fonts /path/to/fonts                      # which fonts cover which script
+python -m ocr.train_rec --root /path/to/ocr --out runs/rec-s --steps 60000
+LIPI_FONTS=/path/to/fonts pytest tests/test_ocr.py     # also tests the line renderer
+```
+
+`--root` holds `data/mozhi/{bengali,hindi}/{train,val,test}`, `data/wiki/<config>/*.parquet` and `fonts-src/`. Every 5,000 steps it scores the Mozhi validation words and 3,000 synthetic lines (character error rate and exact matches) and keeps the checkpoint with the best mean error rate on the two Mozhi sets. Results will be added here when the first run finishes.
