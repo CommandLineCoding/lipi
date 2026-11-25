@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,11 +37,14 @@ import `in`.commandlinecoding.lipi.ui.camera.CameraScreen
 import `in`.commandlinecoding.lipi.ui.components.HomeTab
 import `in`.commandlinecoding.lipi.ui.library.LibraryScreen
 import `in`.commandlinecoding.lipi.ui.library.LibraryViewModel
+import `in`.commandlinecoding.lipi.ui.settings.LicencesScreen
+import `in`.commandlinecoding.lipi.ui.settings.SettingsScreen
 import `in`.commandlinecoding.lipi.ui.theme.LipiDimens
 
 object Routes {
     const val Library = "library"
     const val Settings = "settings"
+    const val Licences = "licences"
     const val Camera = "camera"
     const val AdjustPattern = "adjust?page={page}&single={single}"
     const val Enhance = "enhance"
@@ -75,7 +76,18 @@ fun LipiApp() {
                     )
                 }
             }
-            composable(Routes.Settings) { HomeShell(HomeTab.Settings, nav) { Placeholder(stringResource(R.string.settings_title)) } }
+            composable(Routes.Settings) {
+                val theme by app.preferences.theme.collectAsState()
+                HomeShell(HomeTab.Settings, nav) { clearance ->
+                    SettingsScreen(
+                        theme = theme,
+                        onTheme = app.preferences::setTheme,
+                        onOpenLicences = { nav.navigate(Routes.Licences) { launchSingleTop = true } },
+                        bottomClearance = clearance,
+                    )
+                }
+            }
+            composable(Routes.Licences) { LicencesScreen(onBack = { nav.popBackStack() }) }
             composable(Routes.Camera) {
                 CameraScreen(
                     session = app.session,
@@ -144,12 +156,5 @@ private fun HomeShell(
             onScan = { nav.navigate(Routes.Camera) { launchSingleTop = true } },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
-    }
-}
-
-@Composable
-private fun Placeholder(title: String) {
-    Box(modifier = Modifier.fillMaxSize().statusBarsPadding(), contentAlignment = Alignment.Center) {
-        Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
