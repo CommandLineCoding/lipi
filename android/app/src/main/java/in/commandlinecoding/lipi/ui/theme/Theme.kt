@@ -20,13 +20,15 @@ data class LipiColors(
     val primaryTint: Color,
     val success: Color,
     val successTint: Color,
+    val danger: Color,
+    val dangerTint: Color,
     val paperLine: Color,
     val paperTitle: Color,
     val thumbTints: List<Color>,
 )
 
 val LocalLipiColors = staticCompositionLocalOf {
-    LipiColors(LightPalette.Scrim, LightPalette.PrimaryTint, LightPalette.Success, LightPalette.SuccessTint, LightPalette.PaperLine, LightPalette.PaperTitle, LightPalette.ThumbTints)
+    LipiColors(LightPalette.Scrim, LightPalette.PrimaryTint, LightPalette.Success, LightPalette.SuccessTint, LightPalette.Danger, LightPalette.DangerTint, LightPalette.PaperLine, LightPalette.PaperTitle, LightPalette.ThumbTints)
 }
 
 /** Spacing and sizes used across screens (dp). */
@@ -74,9 +76,9 @@ private val LipiShapes = Shapes(
 @Composable
 fun LipiTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val lipiColors = if (darkTheme) {
-        LipiColors(DarkPalette.Scrim, DarkPalette.PrimaryTint, DarkPalette.Success, DarkPalette.SuccessTint, DarkPalette.PaperLine, DarkPalette.PaperTitle, DarkPalette.ThumbTints)
+        LipiColors(DarkPalette.Scrim, DarkPalette.PrimaryTint, DarkPalette.Success, DarkPalette.SuccessTint, DarkPalette.Danger, DarkPalette.DangerTint, DarkPalette.PaperLine, DarkPalette.PaperTitle, DarkPalette.ThumbTints)
     } else {
-        LipiColors(LightPalette.Scrim, LightPalette.PrimaryTint, LightPalette.Success, LightPalette.SuccessTint, LightPalette.PaperLine, LightPalette.PaperTitle, LightPalette.ThumbTints)
+        LipiColors(LightPalette.Scrim, LightPalette.PrimaryTint, LightPalette.Success, LightPalette.SuccessTint, LightPalette.Danger, LightPalette.DangerTint, LightPalette.PaperLine, LightPalette.PaperTitle, LightPalette.ThumbTints)
     }
     CompositionLocalProvider(LocalLipiColors provides lipiColors) {
         MaterialTheme(
