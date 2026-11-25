@@ -20,8 +20,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import `in`.commandlinecoding.lipi.R
 import `in`.commandlinecoding.lipi.data.DocumentSummary
 import `in`.commandlinecoding.lipi.ui.components.LipiSearchField
+import `in`.commandlinecoding.lipi.ui.document.DeleteDocumentDialog
+import `in`.commandlinecoding.lipi.ui.document.DocumentActionsSheet
+import `in`.commandlinecoding.lipi.ui.document.RenameDocumentDialog
 import `in`.commandlinecoding.lipi.ui.components.PagePill
 import `in`.commandlinecoding.lipi.ui.components.RoundIconButton
 import `in`.commandlinecoding.lipi.ui.theme.LipiDimens
@@ -54,9 +55,16 @@ fun LibraryScreen(
     onQueryChange: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenDocument: (Long) -> Unit,
+    onShareDocument: (DocumentSummary) -> Unit,
+    onExportDocument: (Long) -> Unit,
+    onRenameDocument: (Long, String) -> Unit,
     onDeleteDocument: (Long) -> Unit,
     bottomClearance: androidx.compose.ui.unit.Dp,
 ) {
+    // The document whose actions sheet is open, and the one being renamed or deleted.
+    var selected by remember { mutableStateOf<DocumentSummary?>(null) }
+    var renaming by remember { mutableStateOf<DocumentSummary?>(null) }
+    var deleting by remember { mutableStateOf<DocumentSummary?>(null) }
     Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = LipiDimens.ScreenPadding, vertical = 8.dp),
@@ -95,12 +103,26 @@ fun LibraryScreen(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     items(state.documents, key = { it.document.id }) { summary ->
-                        DocumentCard(summary, nowMillis, words, { onOpenDocument(summary.document.id) }, { onDeleteDocument(summary.document.id) })
+                        DocumentCard(summary, nowMillis, words, { onOpenDocument(summary.document.id) }, { selected = summary })
                     }
                 }
             }
         }
     }
+    selected?.let { doc ->
+        val words = DateLabel.Words(stringResource(R.string.date_today), stringResource(R.string.date_yesterday))
+        DocumentActionsSheet(
+            title = doc.document.title,
+            meta = stringResource(R.string.document_meta, pluralStringResource(R.plurals.page_count, doc.document.pageCount, doc.document.pageCount), DateLabel.of(doc.document.createdAt, nowMillis, words)),
+            onShare = { selected = null; onShareDocument(doc) },
+            onExport = { selected = null; onExportDocument(doc.document.id) },
+            onRename = { selected = null; renaming = doc },
+            onDelete = { selected = null; deleting = doc },
+            onDismiss = { selected = null },
+        )
+    }
+    renaming?.let { doc -> RenameDocumentDialog(doc.document.title, onConfirm = { renaming = null; onRenameDocument(doc.document.id, it) }, onDismiss = { renaming = null }) }
+    deleting?.let { doc -> DeleteDocumentDialog(doc.document.title, onConfirm = { deleting = null; onDeleteDocument(doc.document.id) }, onDismiss = { deleting = null }) }
 }
 
 @Composable
@@ -125,13 +147,12 @@ private fun DocumentCard(
     nowMillis: Long,
     words: DateLabel.Words,
     onOpen: () -> Unit,
-    onDelete: () -> Unit,
+    onLongPress: () -> Unit,
 ) {
     val doc = summary.document
-    var menuOpen by remember { mutableStateOf(false) }
     val tints = LocalLipiColors.current.thumbTints
     Column(
-        modifier = Modifier.fillMaxWidth().combinedClickable(onClick = onOpen, onLongClick = { menuOpen = true }),
+        modifier = Modifier.fillMaxWidth().combinedClickable(onClick = onOpen, onLongClick = onLongPress),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
@@ -155,9 +176,6 @@ private fun DocumentCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-            DropdownMenuItem(text = { Text(stringResource(R.string.delete)) }, onClick = { menuOpen = false; onDelete() })
         }
     }
 }

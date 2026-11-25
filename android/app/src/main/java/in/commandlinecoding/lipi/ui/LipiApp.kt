@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +29,9 @@ import androidx.navigation.navArgument
 import `in`.commandlinecoding.lipi.LipiApplication
 import `in`.commandlinecoding.lipi.R
 import `in`.commandlinecoding.lipi.ui.components.HomeBottomBar
+import `in`.commandlinecoding.lipi.ui.document.DocumentScreen
+import `in`.commandlinecoding.lipi.ui.document.DocumentViewModel
+import `in`.commandlinecoding.lipi.ui.document.shareDocument
 import `in`.commandlinecoding.lipi.ui.enhance.EnhanceScreen
 import `in`.commandlinecoding.lipi.ui.enhance.EnhanceViewModel
 import `in`.commandlinecoding.lipi.ui.export.ExportScreen
@@ -40,17 +44,21 @@ import `in`.commandlinecoding.lipi.ui.library.LibraryViewModel
 import `in`.commandlinecoding.lipi.ui.settings.LicencesScreen
 import `in`.commandlinecoding.lipi.ui.settings.SettingsScreen
 import `in`.commandlinecoding.lipi.ui.theme.LipiDimens
+import kotlinx.coroutines.launch
 
 object Routes {
     const val Library = "library"
     const val Settings = "settings"
     const val Licences = "licences"
+    const val DocumentPattern = "document/{id}?export={export}"
     const val Camera = "camera"
     const val AdjustPattern = "adjust?page={page}&single={single}"
     const val Enhance = "enhance"
     const val Export = "export"
 
     /** Adjust corners from the first page that has no confirmed outline, or, with [single], for page [page] only (the crop tool). */
+    fun document(id: Long, export: Boolean = false) = "document/$id?export=$export"
+
     fun adjust(page: Int = -1, single: Boolean = false) = "adjust?page=$page&single=$single"
 }
 
@@ -58,7 +66,9 @@ object Routes {
 @Composable
 fun LipiApp() {
     val nav = rememberNavController()
-    val app = LocalContext.current.applicationContext as LipiApplication
+    val context = LocalContext.current
+    val app = context.applicationContext as LipiApplication
+    val scope = rememberCoroutineScope()
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         NavHost(navController = nav, startDestination = Routes.Library) {
             composable(Routes.Library) {
@@ -70,11 +80,30 @@ fun LipiApp() {
                         nowMillis = remember(state) { System.currentTimeMillis() },
                         onQueryChange = vm::onQueryChange,
                         onOpenSettings = { nav.navigate(Routes.Settings) { launchSingleTop = true } },
-                        onOpenDocument = { },
+                        onOpenDocument = { id -> nav.navigate(Routes.document(id)) { launchSingleTop = true } },
+                        onShareDocument = { doc ->
+                            scope.launch {
+                                val uri = app.documentActions.sharePdf(doc.document.id)
+                                if (uri != null) shareDocument(context, uri, doc.document.title)
+                            }
+                        },
+                        onExportDocument = { id -> nav.navigate(Routes.document(id, export = true)) { launchSingleTop = true } },
+                        onRenameDocument = { id, title -> scope.launch { app.documentActions.rename(id, title) } },
                         onDeleteDocument = vm::delete,
                         bottomClearance = clearance,
                     )
                 }
+            }
+            composable(
+                Routes.DocumentPattern,
+                arguments = listOf(
+                    navArgument("id") { type = NavType.LongType },
+                    navArgument("export") { type = NavType.BoolType; defaultValue = false },
+                ),
+            ) { entry ->
+                val id = entry.arguments?.getLong("id") ?: 0L
+                val vm: DocumentViewModel = viewModel(key = "document-$id", factory = viewModelFactory { initializer { DocumentViewModel(id, app.documents, app.documentActions) } })
+                DocumentScreen(vm, startWithExport = entry.arguments?.getBoolean("export") ?: false, onBack = { nav.popBackStack() })
             }
             composable(Routes.Settings) {
                 val theme by app.preferences.theme.collectAsState()

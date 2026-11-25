@@ -19,6 +19,18 @@ interface DocumentDao {
     @Query("SELECT imagePath FROM pages WHERE documentId = :documentId ORDER BY position")
     suspend fun pagePaths(documentId: Long): List<String>
 
+    @Query("SELECT * FROM documents WHERE id = :documentId")
+    fun observeDocument(documentId: Long): Flow<DocumentEntity?>
+
+    @Query("SELECT imagePath FROM pages WHERE documentId = :documentId ORDER BY position")
+    fun observePagePaths(documentId: Long): Flow<List<String>>
+
+    @Query("SELECT * FROM documents WHERE id = :documentId")
+    suspend fun document(documentId: Long): DocumentEntity?
+
+    @Query("UPDATE documents SET title = :title WHERE id = :documentId")
+    suspend fun rename(documentId: Long, title: String)
+
     @Insert
     suspend fun insertDocument(document: DocumentEntity): Long
 

@@ -12,6 +12,17 @@ class DocumentRepository(context: Context, private val dao: DocumentDao) {
 
     fun observe(): Flow<List<DocumentSummary>> = dao.observeSummaries()
 
+    /** One document, or null once it was deleted. */
+    fun observeDocument(documentId: Long): Flow<DocumentEntity?> = dao.observeDocument(documentId)
+
+    fun observePagePaths(documentId: Long): Flow<List<String>> = dao.observePagePaths(documentId)
+
+    suspend fun document(documentId: Long): DocumentEntity? = dao.document(documentId)
+
+    suspend fun pagePaths(documentId: Long): List<String> = dao.pagePaths(documentId)
+
+    suspend fun rename(documentId: Long, title: String) = dao.rename(documentId, title)
+
     /** Stores the pages (as JPEG files already written under [pageFiles]) as a new document and returns its id. */
     suspend fun add(title: String, createdAt: Long, pageFiles: List<File>): Long = withContext(Dispatchers.IO) {
         dao.insertWithPages(DocumentEntity(title = title, createdAt = createdAt, pageCount = pageFiles.size), pageFiles.map { it.absolutePath })
