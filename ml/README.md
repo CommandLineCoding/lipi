@@ -121,4 +121,16 @@ python -m ocr.train_rec --root /path/to/ocr --out runs/rec-s --steps 60000
 LIPI_FONTS=/path/to/fonts pytest tests/test_ocr.py     # also tests the line renderer
 ```
 
-`--root` holds `data/mozhi/{bengali,hindi}/{train,val,test}`, `data/wiki/<config>/*.parquet` and `fonts-src/`. Every 5,000 steps it scores the Mozhi validation words and 3,000 synthetic lines (character error rate and exact matches) and keeps the checkpoint with the best mean error rate on the two Mozhi sets. Results will be added here when the first run finishes.
+`--root` holds `data/mozhi/{bengali,hindi}/{train,val,test}`, `data/wiki/<config>/*.parquet` and `fonts-src/`. Every 5,000 steps it scores the Mozhi validation words and 3,000 synthetic lines (character error rate and exact matches) and keeps the checkpoint with the best mean error rate on the two Mozhi sets. Results are below.
+
+**First run (v1), and what it taught.** 60,000 steps (7 hours on one A100), 850,840 parameters. On the held-out Mozhi test words and 5,000 synthetic lines, scored in padded batches ([report](reports/text-rec-v1-batched-test.json)):
+
+| Test set | Words | Character error rate | Words exactly right |
+|---|---|---|---|
+| Mozhi Bengali | 10,113 | 0.33% | 98.8% |
+| Mozhi Hindi | 10,173 | 0.75% | 97.7% |
+| Synthetic, three scripts | 5,000 | 1.08% | 95.7% |
+
+Those numbers are real but they are not what a phone will get. The app reads one line at a time, and read alone the same model scored 1.3% (Bengali) and 1.7% (Hindi) on a sample of the same test words: the recurrent layer had learned to depend on the background padding that batching adds after each word. With 96 pixels of padding appended the error fell to 0.19% and 0.76%, so the model was fine only on padded input. The fix is to pass the real length of each line to the recurrent layer during training (packed sequences) so padding is ignored, and a test that a line reads the same alone and padded (`tests/test_ocr.py`). The v1 model was therefore not released. A second run with the fix (v2, small and medium) is training; its numbers will replace these, and `ocr.check_ncnn` reads words alone, so the reported figures will be the ones the app sees.
+
+Other findings from v1: 0.74% of long synthetic lines (8 characters or more) came back as a single character, which does not happen on real words; the ONNX export matches PyTorch to 4e-5, and the ncnn files read exactly the same text as PyTorch on 1,012 Bengali and 1,018 Hindi test words (the raw scores differ by up to 0.04 because of 16-bit weights).
