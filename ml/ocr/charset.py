@@ -62,3 +62,14 @@ def build(label_texts, min_count=3):
             counts[c] = counts.get(c, 0) + 1
     extra = sorted(c for c, n in counts.items() if n >= min_count and c not in BASE and not c.isspace())
     return Charset(list(BASE) + extra)
+
+
+def edit_distance(a, b):
+    """Levenshtein distance between two strings."""
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]

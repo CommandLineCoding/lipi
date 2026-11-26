@@ -18,26 +18,16 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from . import charset as cs
+from .charset import edit_distance
 from .data import MozhiWords, Mixture, collate
 from .fonts import load_or_scan
 from .model import RecNet, count_parameters
 from .synth_text import Corpus, SyntheticSource
 
 
-def edit_distance(a, b):
-    """Levenshtein distance between two strings."""
-    prev = list(range(len(b) + 1))
-    for i, ca in enumerate(a, 1):
-        cur = [i]
-        for j, cb in enumerate(b, 1):
-            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
-        prev = cur
-    return prev[-1]
-
-
 @torch.no_grad()
 def predict(model, images, steps, charset, device):
-    out = model(images.to(device).float() / 255.0).argmax(2).transpose(0, 1).cpu()  # N, T
+    out = model(images.to(device).float() / 255.0, steps).argmax(2).transpose(0, 1).cpu()  # N, T
     return [charset.decode(out[k, :int(steps[k])].tolist()) for k in range(len(steps))]
 
 
@@ -69,6 +59,8 @@ def main():
     ap.add_argument("--eval-every", type=int, default=5000)
     ap.add_argument("--synthetic-share", type=float, default=0.65)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--hidden", type=int, default=128, help="LSTM units per direction")
+    ap.add_argument("--width", type=float, default=1.0, help="multiplier of the convolution widths")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     device = "cuda"
@@ -100,7 +92,8 @@ def main():
     loader = DataLoader(stream, batch_size=args.bs, num_workers=args.workers, collate_fn=lambda b: collate(b, charset),
                         prefetch_factor=2, persistent_workers=True)
 
-    model = RecNet(len(charset)).to(device)
+    config = {"hidden": args.hidden, "width": args.width}
+    model = RecNet(len(charset), **config).to(device)
     print("parameters", count_parameters(model), flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=args.lr, total_steps=args.steps, pct_start=0.05)
@@ -111,7 +104,7 @@ def main():
     for step, (images, steps, targets, lengths, _) in enumerate(loader, 1):
         images = images.to(device, non_blocking=True).float() / 255.0
         with torch.autocast("cuda", dtype=torch.bfloat16):
-            logp = model(images)
+            logp = model(images, steps)
         loss = ctc(logp.float(), targets, steps, lengths)
         opt.zero_grad(set_to_none=True)
         loss.backward()
@@ -129,10 +122,10 @@ def main():
             log.write(json.dumps(record) + "\n")
             log.flush()
             print("EVAL", json.dumps(record), flush=True)
-            torch.save({"model": model.state_dict(), "charset": charset.chars, "step": step}, os.path.join(args.out, "last.pt"))
+            torch.save({"model": model.state_dict(), "charset": charset.chars, "step": step, "config": config}, os.path.join(args.out, "last.pt"))
             if mean_cer < best:
                 best = mean_cer
-                torch.save({"model": model.state_dict(), "charset": charset.chars, "step": step, "metrics": record}, os.path.join(args.out, "best.pt"))
+                torch.save({"model": model.state_dict(), "charset": charset.chars, "step": step, "config": config, "metrics": record}, os.path.join(args.out, "best.pt"))
         if step >= args.steps:
             break
 

@@ -5,9 +5,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from ocr.charset import Charset, build, normalise
+from ocr.charset import Charset, build, edit_distance, normalise
 from ocr.model import LINE_HEIGHT, STRIDE, RecNet, count_parameters
-from ocr.train_rec import edit_distance
 
 
 def test_normalise_drops_joiners_and_composes():
@@ -79,3 +78,18 @@ def test_renderer_draws_each_script():
             if img is not None:
                 break
         assert img is not None and img.shape[0] == LINE_HEIGHT and img.dtype.name == "uint8"
+
+
+def test_padding_does_not_change_the_reading_of_a_line():
+    """A line must read the same on its own and padded inside a batch (the first recogniser failed this)."""
+    torch.manual_seed(0)
+    model = RecNet(60).eval()
+    real_w, padded_w = 128, 256
+    line = torch.rand(1, 1, LINE_HEIGHT, real_w)
+    padded = torch.rand(1, 1, LINE_HEIGHT, padded_w)  # different junk where the padding is
+    padded[:, :, :, :real_w] = line
+    alone = model(line)                                         # (T, 1, classes)
+    in_batch = model(padded, torch.tensor([real_w // STRIDE]))  # same line, padded, steps given
+    # Only the last few steps can differ: the convolutions near the edge see different neighbours.
+    keep = real_w // STRIDE - 12
+    assert torch.allclose(alone[:keep], in_batch[:keep], atol=1e-4)
